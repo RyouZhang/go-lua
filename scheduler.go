@@ -52,18 +52,18 @@ func (gs *scheduler) loop() {
 					res interface{}
 					err error
 				)
-				if t.vm == nil {
+				if t.lt == nil {
 					res, err = rt.call(t.scriptPath, t.methodName, t.args...)
 				} else {
-					res, err = rt.resume(t.vm, t.args...)
+					res, err = rt.resume(t.lt, t.args...)
 				}
 				if err == nil {
 					t.callback <- res
 				} else {
 					if err.Error() == "LUA_YIELD" {
 						//wait callback
-						if t.vm == nil {
-							t.vm = res.(*C.struct_lua_State)
+						if t.lt == nil {
+							t.lt = res.(*thread)
 						}
 					} else {
 						t.callback <- err
