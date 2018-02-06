@@ -2,8 +2,6 @@ package glua
 
 import (
 	"errors"
-	"reflect"
-	"unsafe"
 
 	"github.com/RyouZhang/async-go"
 )
@@ -27,22 +25,8 @@ func newThread(vm *C.struct_lua_State) *thread {
 	}
 }
 
-func (t *thread) registerDummy(obj interface{}) *C.int {
-	ptr := (*C.int)(unsafe.Pointer(reflect.ValueOf(obj).UnsafeAddr()))
-	t.dummyDic[*ptr] = obj
-	return ptr
-}
-
-func (t *thread) findDummy(ptr *C.int) (interface{}, error) {
-	target, ok := t.dummyDic[*ptr]
-	if ok {
-		return target, nil
-	}
-	return nil, errors.New("Invalid Dummy Pointer")
-}
-
 func (t *thread) destory(vm *C.struct_lua_State) {
-	t.dummyDic = nil
+	cleanLuaDummy(vm)
 	var (
 		index C.int
 		count C.int
@@ -94,8 +78,9 @@ func (t *thread) call(scriptPath string, methodName string, args ...interface{})
 	switch ret {
 	case C.LUA_OK:
 		{
-			res := pullFromLua(t.vm, -2)
-			err := pullFromLua(t.vm, -1)						
+			err := pullFromLua(t.vm, -1)
+			C.lua_remove(t.vm, -1)
+			res := pullFromLua(t.vm, -1)
 			C.glua_pop(t.vm, -1)
 			if err != nil {
 				return nil, errors.New(err.(string))
@@ -120,10 +105,14 @@ func (t *thread) resume(args ...interface{}) (interface{}, error) {
 	switch ret {
 	case C.LUA_OK:
 		{
-			res := pullFromLua(t.vm, -2)
-			err := pullFromLua(t.vm, -1)						
+			err := pullFromLua(t.vm, -1)
+			C.lua_remove(t.vm, -1)
+			res := pullFromLua(t.vm, -1)
 			C.glua_pop(t.vm, -1)
-			return res, errors.New(err.(string))
+			if err != nil {
+				return nil, errors.New(err.(string))
+			}
+			return res, nil
 		}
 	case C.LUA_YIELD:
 		{

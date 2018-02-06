@@ -41,7 +41,8 @@ func pushToLua(L *C.struct_lua_State, args ...interface{}) {
 			C.lua_pushnumber(L, C.lua_Number(arg.(int)))
 		default:
 			{
-				//dummy
+				ptr := registerLuaDummy(L, arg)
+				C.glua_pushlightuserdata(L, ptr)
 			}
 		}
 	}
@@ -81,16 +82,16 @@ func pullLuaTable(_L *C.struct_lua_State) interface{} {
 					value = false
 				}
 			}
-		// case 2:
-		// 	{
-		// 		ptr := C.glua_touserdata(_L, -1)
-		// 		target, ok := objMap[int64(*ptr)]
-		// 		if ok == false {
-		// 			C.glua_pop(_L, 1)
-		// 			continue
-		// 		}
-		// 		value = target.(map[string]interface{})
-		// 	}
+		case 2:
+			{
+				ptr := C.glua_touserdata(_L, -1)
+				target, err := findLuaDummy(_L, ptr)
+				if err != nil {
+					C.glua_pop(_L, 1)
+					continue
+				}
+				value = target
+			}
 		case 3:
 			{
 				value = C.glua_tonumber(_L, -1)
