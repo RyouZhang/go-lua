@@ -1,7 +1,6 @@
 package glua
 
 import (
-	"fmt"
 	"errors"
 )
 
@@ -11,11 +10,12 @@ import (
 import "C"
 
 var (
-	methodDic map[string]interface{}
+	methodDic map[string]func(... interface{}) (interface{}, error)
 )
 
 func init() {
-	methodDic = make(map[string]interface{})
+	methodDic = make(map[string]func(... interface{}) (interface{}, error))
+	registerGoMethod("test_sum", test_sum)
 }
 
 //export call_go_method
@@ -23,23 +23,32 @@ func call_go_method(vm *C.struct_lua_State) C.int {
 	methodName := C.GoString(C.glua_tostring(vm, -2))
 	args := pullFromLua(vm, -1)	
 	C.glua_pop(vm, -1)	
-	
-	fmt.Println("step1", methodName, C.lua_gettop(vm), args)
-	if methodName == "test_sum" {
-		res, err := test_sum(args.([]interface{})...)
-		if err != nil {
-			C.lua_pushnumber(vm, 0)
-			C.lua_pushstring(vm, C.CString(err.Error()))			
-			return 2
-		} else {	
-			C.lua_pushnumber(vm, C.lua_Number(res.(int)))		
-			C.lua_pushnil(vm)			
-			return 2
-		}
+
+	tagetMethod, ok := methodDic[methodName]
+	if false == ok {
+		C.lua_pushnil(vm)
+		C.lua_pushstring(vm, C.CString("Invalid Method Name"))
+		return 2
 	}
-	C.lua_pushnil(vm)
-	C.lua_pushstring(vm, C.CString("Invalid Method Name"))
-	return 2
+	res, err := tagetMethod(args.([]interface{})...)
+	if err != nil {
+		C.lua_pushnumber(vm, 0)
+		C.lua_pushstring(vm, C.CString(err.Error()))			
+		return 2
+	} else {	
+		C.lua_pushnumber(vm, C.lua_Number(res.(int)))		
+		C.lua_pushnil(vm)			
+		return 2
+	}
+}
+
+func registerGoMethod(methodName string, method func(... interface{})(interface{}, error)) error {
+	_, ok := methodDic[methodName]
+	if ok {
+		return errors.New("Duplicate Method Name")
+	}
+	methodDic[methodName] = method
+	return nil
 }
 
 func test_sum(args... interface{}) (interface{}, error) {
