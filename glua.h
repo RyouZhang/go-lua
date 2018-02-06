@@ -16,3 +16,6 @@ void glua_pop(lua_State* _L, int num);
 lua_State *glua_tothread(lua_State* _L, int index);
 int glua_istable(lua_State* _L, int index);
 int* glua_touserdata(lua_State* _L, int index);
+
+//for go extra
+void register_go_method(lua_State* _L);

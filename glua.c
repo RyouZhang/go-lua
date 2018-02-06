@@ -5,6 +5,7 @@
 #include <lualib.h>
 #include "_cgo_export.h"
 
+extern int call_go_method(lua_State* _L);
 
 int gluaL_dostring(lua_State* _L, char* script) {
 	return luaL_dostring(_L, script);
@@ -43,4 +44,9 @@ int glua_istable(lua_State* _L, int index) {
 int* glua_touserdata(lua_State* _L, int index) {
 	void* ptr = lua_touserdata(_L, index);
 	return (int*)ptr;
+}
+
+void register_go_method(lua_State* _L) {
+	lua_pushcfunction(_L, &call_go_method);
+	lua_setglobal(_L, "call_go_method");
 }

@@ -19,8 +19,10 @@ type thread struct {
 }
 
 func newThread(vm *C.struct_lua_State) *thread {
+	_L := C.lua_newthread(vm)
+	C.register_go_method(_L)
 	return &thread{
-		vm:       C.lua_newthread(vm),
+		vm:       _L,
 		dummyDic: make(map[C.int]interface{}),
 	}
 }
@@ -92,8 +94,12 @@ func (t *thread) call(scriptPath string, methodName string, args ...interface{})
 	switch ret {
 	case C.LUA_OK:
 		{
-			res := pullFromLua(t.vm)
+			res := pullFromLua(t.vm, -2)
+			err := pullFromLua(t.vm, -1)						
 			C.glua_pop(t.vm, -1)
+			if err != nil {
+				return nil, errors.New(err.(string))
+			}
 			return res, nil
 		}
 	case C.LUA_YIELD:
@@ -114,9 +120,10 @@ func (t *thread) resume(args ...interface{}) (interface{}, error) {
 	switch ret {
 	case C.LUA_OK:
 		{
-			res := pullFromLua(t.vm)
+			res := pullFromLua(t.vm, -2)
+			err := pullFromLua(t.vm, -1)						
 			C.glua_pop(t.vm, -1)
-			return res, nil
+			return res, errors.New(err.(string))
 		}
 	case C.LUA_YIELD:
 		{
