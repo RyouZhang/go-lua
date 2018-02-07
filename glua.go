@@ -1,8 +1,6 @@
 package glua
 
-import (
-)
-
+import ()
 
 func Call(filePath string, methodName string, args ...interface{}) (interface{}, error) {
 	callback := make(chan interface{})
@@ -13,14 +11,14 @@ func Call(filePath string, methodName string, args ...interface{}) (interface{},
 		args:       args,
 		callback:   callback,
 	}
-	Scheduler().queue <- t	
-	for {			
-		res := <- t.callback
+	Scheduler().queue <- t
+	for {
+		res := <-t.callback
 		switch res.(type) {
 		case error:
 			{
 				if res.(error).Error() == "LUA_YIELD" {
-					methodName, args, err := LoadAsyncContext(generateStateId(t.lt.vm))	
+					methodName, args, err := LoadAsyncContext(generateStateId(t.lt.vm))
 					if err != nil {
 						return nil, err
 					}
@@ -30,12 +28,12 @@ func Call(filePath string, methodName string, args ...interface{}) (interface{},
 							t.args = []interface{}{res, nil}
 						} else {
 							t.args = []interface{}{res, err.Error()}
-						}						
-						Scheduler().queue <- t	
-					}()																
+						}
+						Scheduler().queue <- t
+					}()
 				} else {
 					return nil, res.(error)
-				}				
+				}
 			}
 		default:
 			{
@@ -43,5 +41,5 @@ func Call(filePath string, methodName string, args ...interface{}) (interface{},
 				return res, nil
 			}
 		}
-	}	
+	}
 }

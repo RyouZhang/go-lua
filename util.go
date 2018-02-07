@@ -59,7 +59,7 @@ func pushToLua(L *C.struct_lua_State, args ...interface{}) {
 func pushArrayToLua(L *C.struct_lua_State, data []interface{}) {
 	C.lua_createtable(L, 0, 0)
 	if len(data) == 0 {
-		return		
+		return
 	}
 	for index, value := range data {
 		C.lua_pushnumber(L, C.lua_Number(index))
@@ -71,7 +71,7 @@ func pushArrayToLua(L *C.struct_lua_State, data []interface{}) {
 func pushMapToLua(L *C.struct_lua_State, data map[string]interface{}) {
 	C.lua_createtable(L, 0, 0)
 	if len(data) == 0 {
-		return		
+		return
 	}
 	for key, value := range data {
 		C.lua_pushstring(L, C.CString(key))

@@ -52,7 +52,7 @@ func (gs *scheduler) loop() {
 				var (
 					res interface{}
 					err error
-				)			
+				)
 				res, err = rt.call(t.scriptPath, t.methodName, t.args...)
 				if err == nil {
 					t.callback <- res
@@ -70,9 +70,9 @@ func (gs *scheduler) loop() {
 			}()
 		} else {
 			go func() {
-				var rt *gluaRT					
+				var rt *gluaRT
 				for {
-					rt = <- gs.idle
+					rt = <-gs.idle
 					if rt.id == t.pid {
 						goto A
 					}
@@ -88,7 +88,7 @@ func (gs *scheduler) loop() {
 					var (
 						res interface{}
 						err error
-					)			
+					)
 					res, err = rt.resume(t.lt, t.args...)
 					if err == nil {
 						t.callback <- res

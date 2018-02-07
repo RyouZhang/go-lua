@@ -9,7 +9,6 @@ import (
 //#include "glua.h"
 import "C"
 
-
 type gluaRT struct {
 	id int64
 	vm *C.struct_lua_State
@@ -22,7 +21,7 @@ func newGLuaRT() *gluaRT {
 	C.lua_gc(_L, C.LUA_GCRESTART, 0)
 
 	gl := &gluaRT{
-		id: generateStateId(_L), 
+		id: generateStateId(_L),
 		vm: _L,
 	}
 	return gl

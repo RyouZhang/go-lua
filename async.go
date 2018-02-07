@@ -1,6 +1,6 @@
 package glua
 
-import (		
+import (
 	"github.com/RyouZhang/async-go"
 )
 
@@ -12,8 +12,7 @@ func init() {
 	contextCache = async.NewKVCache()
 }
 
-
-func StoreAsyncContext(vmKey int64, methodName string, args...interface{}) {
+func StoreAsyncContext(vmKey int64, methodName string, args ...interface{}) {
 	contextCache.Commit(func(data *async.KVData) (interface{}, error) {
 		value := []interface{}{methodName, args}
 		data.Set(vmKey, value)

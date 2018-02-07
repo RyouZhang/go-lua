@@ -2,9 +2,9 @@ package glua
 
 import (
 	"errors"
-	"reflect"
-	"net/http"
 	"io/ioutil"
+	"net/http"
+	"reflect"
 
 	"github.com/ugorji/go/codec"
 )
@@ -16,7 +16,7 @@ import "C"
 
 var (
 	methodDic map[string]func(...interface{}) (interface{}, error)
-	jh codec.JsonHandle
+	jh        codec.JsonHandle
 )
 
 func init() {
@@ -52,11 +52,11 @@ func sync_go_method(vm *C.struct_lua_State) C.int {
 	}
 	res, err := tagetMethod(args...)
 	if err != nil {
-		pushToLua(vm, 0)		
+		pushToLua(vm, 0)
 		C.lua_pushstring(vm, C.CString(err.Error()))
 		return 2
 	} else {
-		pushToLua(vm, res)	
+		pushToLua(vm, res)
 		C.lua_pushnil(vm)
 		return 2
 	}
@@ -85,7 +85,7 @@ func registerGoMethod(methodName string, method func(...interface{}) (interface{
 	return nil
 }
 
-func callMethod(methodName string, args...interface{}) (interface{}, error) {
+func callMethod(methodName string, args ...interface{}) (interface{}, error) {
 	tagetMethod, ok := methodDic[methodName]
 	if false == ok {
 		return nil, errors.New("Invalid Method Name")
@@ -110,17 +110,16 @@ func test_sum(args ...interface{}) (interface{}, error) {
 	return sum, nil
 }
 
-
-func json_decode(args... interface{}) (interface{}, error) {
+func json_decode(args ...interface{}) (interface{}, error) {
 	raw := args[0].(string)
 
 	var res map[string]interface{}
-	dec := codec.NewDecoderBytes([]byte(raw), &jh)	
+	dec := codec.NewDecoderBytes([]byte(raw), &jh)
 	err := dec.Decode(&res)
 	return res, err
 }
 
-func get_es_info(args...interface{}) (interface{}, error) {
+func get_es_info(args ...interface{}) (interface{}, error) {
 	res, err := http.Get(args[0].(string))
 	if err != nil {
 		return nil, err
