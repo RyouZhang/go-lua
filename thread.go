@@ -75,13 +75,23 @@ func (t *thread) call(scriptPath string, methodName string, args ...interface{})
 	pushToLua(t.vm, args...)
 
 
+
 	ret := C.lua_resume(t.vm, C.int(len(args)))
 	switch ret {
 	case C.LUA_OK:
 		{
-			err := pullFromLua(t.vm, -1)
-			C.lua_remove(t.vm, -1)
-			res := pullFromLua(t.vm, -1)
+			var (
+				res interface{}
+				err interface{}
+			)
+			num := C.lua_gettop(t.vm)
+			if num > 1 {
+				err = pullFromLua(t.vm, -1)
+				C.lua_remove(t.vm, -1)
+				res = pullFromLua(t.vm, -1)
+			} else {
+				res = pullFromLua(t.vm, -1)
+			}
 			C.glua_pop(t.vm, -1)
 			if err != nil {
 				return nil, errors.New(err.(string))
