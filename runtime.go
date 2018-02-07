@@ -9,20 +9,6 @@ import (
 //#include "glua.h"
 import "C"
 
-var (
-	rdIds chan int64
-)
-
-func init() {
-	rdIds = make(chan int64, 1)
-	rdIds <- 1
-}
-
-func generateGLuaRTID() int64 {
-	res := <-rdIds
-	rdIds <- (res + 1)
-	return res
-}
 
 type gluaRT struct {
 	id int64
@@ -30,13 +16,15 @@ type gluaRT struct {
 }
 
 func newGLuaRT() *gluaRT {
+	_L := C.luaL_newstate()
+	C.lua_gc(_L, C.LUA_GCSTOP, 0)
+	C.luaL_openlibs(_L)
+	C.lua_gc(_L, C.LUA_GCRESTART, 0)
+
 	gl := &gluaRT{
-		id: generateGLuaRTID(),
+		id: generateStateId(_L), 
+		vm: _L,
 	}
-	gl.vm = C.luaL_newstate()
-	C.lua_gc(gl.vm, C.LUA_GCSTOP, 0)
-	C.luaL_openlibs(gl.vm)
-	C.lua_gc(gl.vm, C.LUA_GCRESTART, 0)
 	return gl
 }
 
@@ -67,7 +55,7 @@ func (gl *gluaRT) resume(t *thread, args ...interface{}) (interface{}, error) {
 		return nil, errors.New("Invalid Lua Thread")
 	}
 	res, err := t.resume(args...)
-	if err.Error() == "LUA_YIELD" {
+	if err != nil && err.Error() == "LUA_YIELD" {
 		return t, err
 	} else {
 		t.destory(gl.vm)

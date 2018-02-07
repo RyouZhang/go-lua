@@ -74,6 +74,7 @@ func (t *thread) call(scriptPath string, methodName string, args ...interface{})
 	C.glua_getglobal(t.vm, C.CString(methodName))
 	pushToLua(t.vm, args...)
 
+
 	ret := C.lua_resume(t.vm, C.int(len(args)))
 	switch ret {
 	case C.LUA_OK:
@@ -88,7 +89,7 @@ func (t *thread) call(scriptPath string, methodName string, args ...interface{})
 			return res, nil
 		}
 	case C.LUA_YIELD:
-		{
+		{			
 			return nil, errors.New("LUA_YIELD")
 		}
 	default:
@@ -101,13 +102,14 @@ func (t *thread) call(scriptPath string, methodName string, args ...interface{})
 
 func (t *thread) resume(args ...interface{}) (interface{}, error) {
 	pushToLua(t.vm, args...)
-	ret := C.lua_resume(t.vm, C.int(len(args)))
+	num := C.lua_gettop(t.vm)
+	ret := C.lua_resume(t.vm, num)
 	switch ret {
 	case C.LUA_OK:
-		{
+		{	
 			err := pullFromLua(t.vm, -1)
-			C.lua_remove(t.vm, -1)
-			res := pullFromLua(t.vm, -1)
+			C.lua_remove(t.vm, -1)		
+			res := pullFromLua(t.vm, -1)			
 			C.glua_pop(t.vm, -1)
 			if err != nil {
 				return nil, errors.New(err.(string))

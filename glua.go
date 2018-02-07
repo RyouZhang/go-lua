@@ -1,6 +1,8 @@
 package glua
 
-import ()
+import (
+)
+
 
 func Call(filePath string, methodName string, args ...interface{}) (interface{}, error) {
 	callback := make(chan interface{})
@@ -11,17 +13,35 @@ func Call(filePath string, methodName string, args ...interface{}) (interface{},
 		args:       args,
 		callback:   callback,
 	}
-	go Scheduler().pushTask(t)
-
-	res := <-callback
-	switch res.(type) {
-	case error:
-		{
-			return nil, res.(error)
+	Scheduler().pushTask(t)	
+	for {			
+		res := <- t.callback
+		switch res.(type) {
+		case error:
+			{
+				if res.(error).Error() == "LUA_YIELD" {
+					methodName, args, err := LoadAsyncContext(generateStateId(t.lt.vm))	
+					if err != nil {
+						return nil, err
+					}
+					go func() {
+						res, err := callMethod(methodName, args...)
+						if err == nil {
+							t.args = []interface{}{res, nil}
+						} else {
+							t.args = []interface{}{res, err.Error()}
+						}						
+						Scheduler().pushTask(t)	
+					}()																
+				} else {
+					return nil, res.(error)
+				}				
+			}
+		default:
+			{
+				t.lt = nil
+				return res, nil
+			}
 		}
-	default:
-		{
-			return res, nil
-		}
-	}
+	}	
 }

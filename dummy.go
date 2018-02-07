@@ -1,7 +1,6 @@
 package glua
 
 import (
-	"fmt"
 	"errors"
 	// "reflect"
 	"unsafe"
@@ -49,7 +48,6 @@ func registerLuaDummy(vm *C.struct_lua_State, obj interface{}) *C.int {
 func findLuaDummy(vm *C.struct_lua_State, ptr *C.int) (interface{}, error) {
 	vmKey := generateStateId(vm)
 	dummyId := int64(*ptr)
-	fmt.Println(dummyId, vmKey)
 	return dummpCache.Commit(func(data *async.KVData) (interface{}, error) {
 		temp, err := data.Get(vmKey)
 		if err != nil {

@@ -39,12 +39,44 @@ func pushToLua(L *C.struct_lua_State, args ...interface{}) {
 			C.lua_pushnumber(L, C.lua_Number(arg.(uint)))
 		case int:
 			C.lua_pushnumber(L, C.lua_Number(arg.(int)))
+		case map[string]interface{}:
+			{
+				pushMapToLua(L, arg.(map[string]interface{}))
+			}
+		case []interface{}:
+			{
+				pushArrayToLua(L, arg.([]interface{}))
+			}
 		default:
 			{
 				ptr := registerLuaDummy(L, arg)
 				C.glua_pushlightuserdata(L, ptr)
 			}
 		}
+	}
+}
+
+func pushArrayToLua(L *C.struct_lua_State, data []interface{}) {
+	C.lua_createtable(L, 0, 0)
+	if len(data) == 0 {
+		return		
+	}
+	for index, value := range data {
+		C.lua_pushnumber(L, C.lua_Number(index))
+		pushToLua(L, value)
+		C.lua_settable(L, -3)
+	}
+}
+
+func pushMapToLua(L *C.struct_lua_State, data map[string]interface{}) {
+	C.lua_createtable(L, 0, 0)
+	if len(data) == 0 {
+		return		
+	}
+	for key, value := range data {
+		C.lua_pushstring(L, C.CString(key))
+		pushToLua(L, value)
+		C.lua_settable(L, -3)
 	}
 }
 

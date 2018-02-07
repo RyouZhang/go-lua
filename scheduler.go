@@ -30,7 +30,8 @@ func Scheduler() *scheduler {
 			working: 0,
 		}
 		for i := 0; i < 16; i++ {
-			gs.idle <- newGLuaRT()
+			rt := newGLuaRT()
+			gs.idle <- rt
 		}
 		go gs.loop()
 	})
@@ -51,12 +52,8 @@ func (gs *scheduler) loop() {
 				var (
 					res interface{}
 					err error
-				)
-				if t.lt == nil {
-					res, err = rt.call(t.scriptPath, t.methodName, t.args...)
-				} else {
-					res, err = rt.resume(t.lt, t.args...)
-				}
+				)			
+				res, err = rt.call(t.scriptPath, t.methodName, t.args...)
 				if err == nil {
 					t.callback <- res
 				} else {
@@ -65,10 +62,48 @@ func (gs *scheduler) loop() {
 						if t.lt == nil {
 							t.lt = res.(*thread)
 						}
+						t.callback <- err
 					} else {
 						t.callback <- err
 					}
 				}
+			}()
+		} else {
+			go func() {
+				var rt *gluaRT					
+				for {
+					rt = <- gs.idle
+					if rt.id == t.pid {
+						goto A
+					}
+					gs.idle <- rt
+				}
+			A:
+				gs.working++
+				go func() {
+					defer func() {
+						gs.working--
+						gs.idle <- rt
+					}()
+					var (
+						res interface{}
+						err error
+					)			
+					res, err = rt.resume(t.lt, t.args...)
+					if err == nil {
+						t.callback <- res
+					} else {
+						if err.Error() == "LUA_YIELD" {
+							//wait callback
+							if t.lt == nil {
+								t.lt = res.(*thread)
+							}
+							t.callback <- err
+						} else {
+							t.callback <- err
+						}
+					}
+				}()
 			}()
 		}
 	}
