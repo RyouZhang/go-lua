@@ -13,7 +13,7 @@ func Call(filePath string, methodName string, args ...interface{}) (interface{},
 		args:       args,
 		callback:   callback,
 	}
-	Scheduler().pushTask(t)	
+	Scheduler().queue <- t	
 	for {			
 		res := <- t.callback
 		switch res.(type) {
@@ -31,7 +31,7 @@ func Call(filePath string, methodName string, args ...interface{}) (interface{},
 						} else {
 							t.args = []interface{}{res, err.Error()}
 						}						
-						Scheduler().pushTask(t)	
+						Scheduler().queue <- t	
 					}()																
 				} else {
 					return nil, res.(error)

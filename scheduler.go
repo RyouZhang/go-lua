@@ -108,7 +108,3 @@ func (gs *scheduler) loop() {
 		}
 	}
 }
-
-func (gs *scheduler) pushTask(t *glTask) {
-	gs.queue <- t
-}
