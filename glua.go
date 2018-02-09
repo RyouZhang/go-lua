@@ -18,12 +18,12 @@ func Call(filePath string, methodName string, args ...interface{}) (interface{},
 		case error:
 			{
 				if res.(error).Error() == "LUA_YIELD" {
-					methodName, args, err := LoadAsyncContext(generateStateId(t.lt.vm))
+					ctx, err := loadYieldContext(t.lt.vm)
 					if err != nil {
 						return nil, err
 					}
 					go func() {
-						res, err := callMethod(methodName, args...)
+						res, err := callMethod(ctx.methodName, ctx.args...)
 						if err == nil {
 							t.args = []interface{}{res, nil}
 						} else {

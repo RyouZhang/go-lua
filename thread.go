@@ -26,7 +26,7 @@ func newThread(vm *C.struct_lua_State) *thread {
 }
 
 func (t *thread) destory(vm *C.struct_lua_State) {
-	cleanLuaDummy(vm)
+	cleanDummy(vm)
 	var (
 		index C.int
 		count C.int

@@ -21,7 +21,7 @@ func newGLuaRT() *gluaRT {
 	C.lua_gc(_L, C.LUA_GCRESTART, 0)
 
 	gl := &gluaRT{
-		id: generateStateId(_L),
+		id: generateLuaStateId(_L),
 		vm: _L,
 	}
 	return gl

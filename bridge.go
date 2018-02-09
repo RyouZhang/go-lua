@@ -72,7 +72,7 @@ func async_go_method(vm *C.struct_lua_State) C.int {
 		args = append(args, pullFromLua(vm, i))
 	}
 	C.glua_pop(vm, -1)
-	StoreAsyncContext(generateStateId(vm), methodName, args...)
+	storeYieldContext(vm, methodName, args...)
 	return 0
 }
 

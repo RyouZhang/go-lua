@@ -49,7 +49,7 @@ func pushToLua(L *C.struct_lua_State, args ...interface{}) {
 			}
 		default:
 			{
-				ptr := registerLuaDummy(L, arg)
+				ptr := pushDummy(L, arg)
 				C.glua_pushlightuserdata(L, ptr)
 			}
 		}
@@ -117,7 +117,7 @@ func pullLuaTable(_L *C.struct_lua_State) interface{} {
 		case 2:
 			{
 				ptr := C.glua_touserdata(_L, -1)
-				target, err := findLuaDummy(_L, ptr)
+				target, err := findDummy(_L, ptr)
 				if err != nil {
 					C.glua_pop(_L, 1)
 					continue
