@@ -12,8 +12,8 @@ import (
 import "C"
 
 type gLuaThread struct {
-	id         int64
-	thread     *C.struct_lua_State
+	id     int64
+	thread *C.struct_lua_State
 }
 
 func newGLuaThread(vm *C.struct_lua_State) *gLuaThread {

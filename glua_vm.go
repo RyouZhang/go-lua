@@ -10,19 +10,18 @@ import (
 import "C"
 
 type gLuaVM struct {
-	id    int64
-	queue chan *gLuaContext
-	vm    *C.struct_lua_State
+	id      int64
+	queue   chan *gLuaContext
+	vm      *C.struct_lua_State
 	threads map[int64]*gLuaThread
 }
 
 func newGLuaVM() *gLuaVM {
 	gl := &gLuaVM{
-		queue: make(chan *gLuaContext, 128),
+		queue:   make(chan *gLuaContext, 128),
 		threads: make(map[int64]*gLuaThread),
 	}
 	gl.id, gl.vm = createLuaState()
-	go gl.loop()
 	return gl
 }
 
@@ -32,23 +31,21 @@ func (gl *gLuaVM) destory() {
 	gl.vm = nil
 }
 
-func (gl *gLuaVM) loop() {
-	for ctx := range gl.queue {
-		if ctx.vmId == 0 {
-			ctx.vmId = gl.id
-			res, err := gl.call(ctx)
-			if err != nil {
-				ctx.callback <- err
-			} else {
-				ctx.callback <- res
-			}
+func (gl *gLuaVM) process(ctx *gLuaContext) {
+	if ctx.vmId == 0 {
+		ctx.vmId = gl.id
+		res, err := gl.call(ctx)
+		if err != nil {
+			ctx.callback <- err
 		} else {
-			res, err := gl.resume(ctx)
-			if err != nil {
-				ctx.callback <- err
-			} else {
-				ctx.callback <- res
-			}
+			ctx.callback <- res
+		}
+	} else {
+		res, err := gl.resume(ctx)
+		if err != nil {
+			ctx.callback <- err
+		} else {
+			ctx.callback <- res
 		}
 	}
 }
@@ -77,7 +74,7 @@ func (gl *gLuaVM) destoryThread(t *gLuaThread) {
 func (gl *gLuaVM) call(ctx *gLuaContext) (interface{}, error) {
 	thread := newGLuaThread(gl.vm)
 	gl.threads[thread.id] = thread
-	
+
 	res, err := thread.call(ctx.scriptPath, ctx.methodName, ctx.args...)
 	if err != nil && err.Error() == "LUA_YIELD" {
 		ctx.threadId = thread.id
