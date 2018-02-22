@@ -30,7 +30,7 @@ func loadScript(filePath string) (string, error) {
 	scriptRW.RLock()
 	target, ok := scripts[filePath]
 	scriptRW.RUnlock()
-	if ok {		
+	if ok {
 		return target, nil
 	}
 

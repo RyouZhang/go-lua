@@ -28,7 +28,7 @@ func (t *gLuaThread) call(scriptPath string, methodName string, args ...interfac
 	target, err := loadScript(scriptPath)
 	if err != nil {
 		return nil, err
-	}	
+	}
 
 	ret := C.gluaL_dostring(t.thread, C.CString(target))
 	if ret != C.LUA_OK {
