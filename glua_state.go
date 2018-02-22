@@ -29,6 +29,8 @@ func createLuaState() (int64, *C.struct_lua_State) {
 	C.lua_gc(vm, C.LUA_GCSTOP, 0)
 	C.luaL_openlibs(vm)
 	C.lua_gc(vm, C.LUA_GCRESTART, 0)
+	C.register_go_method(vm)
+	
 	vmKey := generateLuaStateId(vm)
 
 	rw.Lock()
