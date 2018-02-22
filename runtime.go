@@ -15,15 +15,8 @@ type gluaRT struct {
 }
 
 func newGLuaRT() *gluaRT {
-	_L := C.luaL_newstate()
-	C.lua_gc(_L, C.LUA_GCSTOP, 0)
-	C.luaL_openlibs(_L)
-	C.lua_gc(_L, C.LUA_GCRESTART, 0)
-
-	gl := &gluaRT{
-		id: generateLuaStateId(_L),
-		vm: _L,
-	}
+	vmKey, vm := createLuaState()
+	gl := &gluaRT{id: vmKey, vm: vm}
 	return gl
 }
 

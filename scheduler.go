@@ -15,7 +15,7 @@ var (
 )
 
 type scheduler struct {
-	queue   chan *glTask
+	queue   chan *context
 	idle    chan *gluaRT
 	freeze  chan *gluaRT
 	working int
@@ -24,7 +24,7 @@ type scheduler struct {
 func Scheduler() *scheduler {
 	gsOnce.Do(func() {
 		gs = &scheduler{
-			queue:   make(chan *glTask, 128),
+			queue:   make(chan *context, 128),
 			idle:    make(chan *gluaRT, 16),
 			freeze:  make(chan *gluaRT, 16),
 			working: 0,

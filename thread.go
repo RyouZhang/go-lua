@@ -12,17 +12,14 @@ import (
 import "C"
 
 type thread struct {
-	vm       *C.struct_lua_State
-	dummyDic map[C.int]interface{}
+	vmKey int64
+	vm    *C.struct_lua_State
 }
 
 func newThread(vm *C.struct_lua_State) *thread {
-	_L := C.lua_newthread(vm)
+	vmKey, thread := createLuaThread(vm)
 	C.register_go_method(_L)
-	return &thread{
-		vm:       _L,
-		dummyDic: make(map[C.int]interface{}),
-	}
+	return &thread{vmKey: vmKey, vm: _L}
 }
 
 func (t *thread) destory(vm *C.struct_lua_State) {

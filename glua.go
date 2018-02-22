@@ -5,7 +5,7 @@ import ()
 func Call(filePath string, methodName string, args ...interface{}) (interface{}, error) {
 	callback := make(chan interface{})
 	defer close(callback)
-	t := &glTask{
+	t := &context{
 		scriptPath: filePath,
 		methodName: methodName,
 		args:       args,
@@ -18,7 +18,7 @@ func Call(filePath string, methodName string, args ...interface{}) (interface{},
 		case error:
 			{
 				if res.(error).Error() == "LUA_YIELD" {
-					ctx, err := loadYieldContext(t.lt.vm)
+					ctx, err := loadYieldContext(t.threadId)
 					if err != nil {
 						return nil, err
 					}
