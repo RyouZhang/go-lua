@@ -11,18 +11,22 @@ import (
 //#include "glua.h"
 import "C"
 
-type gLuaThread struct {	
-	id	int64
-	thread		*C.struct_lua_State
-	dummyCache	map[int64]interface{}
+type gLuaThread struct {
+	id         int64
+	thread     *C.struct_lua_State
+	dummyCache map[int64]interface{}
 }
 
-func newGLuaThread(vm *C.struct_lua_State)  *gLuaThread {
+func newGLuaThread(vm *C.struct_lua_State) *gLuaThread {
 	gl := &gLuaThread{
 		dummyCache: make(map[int64]interface{}),
 	}
 	gl.id, gl.thread = createLuaThread(vm)
 	return gl
+}
+
+func (t *gLuaThread) destory() {
+	//todo
 }
 
 func (t *gLuaThread) call(scriptPath string, methodName string, args ...interface{}) (interface{}, error) {
@@ -88,7 +92,7 @@ func (t *gLuaThread) call(scriptPath string, methodName string, args ...interfac
 	}
 }
 
-func (t *gLuaThread)resume(args ...interface{}) (interface{}, error) {
+func (t *gLuaThread) resume(args ...interface{}) (interface{}, error) {
 	pushToLua(t.thread, args...)
 	num := C.lua_gettop(t.thread)
 	ret := C.lua_resume(t.thread, num)
@@ -113,5 +117,5 @@ func (t *gLuaThread)resume(args ...interface{}) (interface{}, error) {
 			temp := C.GoString(C.glua_tostring(t.thread, -1))
 			return nil, errors.New(temp)
 		}
-	}	
+	}
 }

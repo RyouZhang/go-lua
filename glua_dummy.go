@@ -1,8 +1,8 @@
 package glua
 
 import (
-	"sync"
 	"errors"
+	"sync"
 	"unsafe"
 )
 
@@ -12,8 +12,8 @@ import (
 import "C"
 
 var (
-	dummyCache		map[int64]map[int64]interface{}
-	dummyRW			sync.RWMutex			
+	dummyCache map[int64]map[int64]interface{}
+	dummyRW    sync.RWMutex
 )
 
 func init() {
@@ -21,7 +21,7 @@ func init() {
 }
 
 //lua dummy method
-func pushDummy(vm *C.struct_lua_State, obj interface{}) *C.int {		
+func pushDummy(vm *C.struct_lua_State, obj interface{}) *C.int {
 	vmKey := generateLuaStateId(vm)
 	ptr := (*C.int)(unsafe.Pointer(&obj))
 	dummyId := int64(*ptr)
@@ -35,7 +35,7 @@ func pushDummy(vm *C.struct_lua_State, obj interface{}) *C.int {
 		dummyCache[vmKey] = target
 	}
 	target[dummyId] = obj
-	
+
 	return ptr
 }
 
@@ -52,7 +52,7 @@ func findDummy(vm *C.struct_lua_State, ptr *C.int) (interface{}, error) {
 	}
 	value, ok := target[dummyId]
 	if false == ok {
-		return nil, errors.New("Invalid DummyId")		
+		return nil, errors.New("Invalid DummyId")
 	}
 	return value, nil
 }

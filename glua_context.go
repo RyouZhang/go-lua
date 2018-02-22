@@ -7,7 +7,6 @@ import ()
 //#include "glua.h"
 import "C"
 
-
 type gLuaContext struct {
 	id         int64
 	vmId       int64

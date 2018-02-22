@@ -6,9 +6,9 @@ func Call(filePath string, methodName string, args ...interface{}) (interface{},
 	callback := make(chan interface{})
 	defer close(callback)
 
-	ctx := &gLuaContext {
-		vmId: 0,
-		threadId: 0,
+	ctx := &gLuaContext{
+		vmId:       0,
+		threadId:   0,
 		scriptPath: filePath,
 		methodName: methodName,
 		args:       args,
@@ -17,7 +17,7 @@ func Call(filePath string, methodName string, args ...interface{}) (interface{},
 	getCore().push(ctx)
 
 Resume:
-	res := <- ctx.callback
+	res := <-ctx.callback
 	switch res.(type) {
 	case error:
 		{

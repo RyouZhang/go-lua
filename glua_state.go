@@ -1,8 +1,8 @@
 package glua
 
 import (
-	"sync"
 	"errors"
+	"sync"
 	"unsafe"
 )
 
@@ -11,12 +11,10 @@ import (
 //#include "glua.h"
 import "C"
 
-
 var (
-	rw			sync.RWMutex
+	rw            sync.RWMutex
 	luaStateCache map[int64]*C.struct_lua_State
 )
-
 
 func init() {
 	luaStateCache = make(map[int64]*C.struct_lua_State)

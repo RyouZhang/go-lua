@@ -1,8 +1,8 @@
 package glua
 
 import (
-	"sync"
 	"errors"
+	"sync"
 )
 
 // #cgo CFLAGS: -I/opt/luajit/include/luajit-2.1
@@ -11,14 +11,13 @@ import (
 import "C"
 
 var (
-	yieldCache		map[int64]*gLuaYieldContext
-	yieldRW			sync.RWMutex			
+	yieldCache map[int64]*gLuaYieldContext
+	yieldRW    sync.RWMutex
 )
 
 func init() {
 	yieldCache = make(map[int64]*yieldContext)
 }
-
 
 type gLuaYieldContext struct {
 	methodName string
@@ -38,9 +37,6 @@ func storeYieldContext(vm *C.struct_lua_State, methodName string, args ...interf
 }
 
 func loadYieldContext(threadId int64) (*gLuaYieldContext, error) {
-	if vm == nil {
-		return nil, errors.New("Invalid Lua State")
-	}
 	yieldRW.RLock()
 	defer func() {
 		delete(yieldCache, threadId)
