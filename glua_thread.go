@@ -14,19 +14,16 @@ import "C"
 type gLuaThread struct {
 	id         int64
 	thread     *C.struct_lua_State
-	dummyCache map[int64]interface{}
 }
 
 func newGLuaThread(vm *C.struct_lua_State) *gLuaThread {
-	gl := &gLuaThread{
-		dummyCache: make(map[int64]interface{}),
-	}
+	gl := &gLuaThread{}
 	gl.id, gl.thread = createLuaThread(vm)
 	return gl
 }
 
 func (t *gLuaThread) destory() {
-	//todo
+	cleanDummy(t.thread)
 }
 
 func (t *gLuaThread) call(scriptPath string, methodName string, args ...interface{}) (interface{}, error) {

@@ -13,11 +13,13 @@ type gLuaVM struct {
 	id    int64
 	queue chan *gLuaContext
 	vm    *C.struct_lua_State
+	threads map[int64]*gLuaThread
 }
 
 func newGLuaVM() *gLuaVM {
 	gl := &gLuaVM{
 		queue: make(chan *gLuaContext, 128),
+		threads: make(map[int64]*gLuaThread),
 	}
 	gl.id, gl.vm = createLuaState()
 	go gl.loop()
@@ -53,6 +55,7 @@ func (gl *gLuaVM) loop() {
 
 func (gl *gLuaVM) destoryThread(t *gLuaThread) {
 	t.destory()
+	delete(gl.threads, t.id)
 	var (
 		index C.int
 		count C.int
@@ -73,12 +76,10 @@ func (gl *gLuaVM) destoryThread(t *gLuaThread) {
 
 func (gl *gLuaVM) call(ctx *gLuaContext) (interface{}, error) {
 	thread := newGLuaThread(gl.vm)
+	gl.threads[thread.id] = thread
+	
 	res, err := thread.call(ctx.scriptPath, ctx.methodName, ctx.args...)
-	if err == nil {
-		gl.destoryThread(thread)
-		return res, err
-	}
-	if err.Error() == "LUA_YIELD" {
+	if err != nil && err.Error() == "LUA_YIELD" {
 		ctx.threadId = thread.id
 		return nil, err
 	} else {
@@ -88,17 +89,11 @@ func (gl *gLuaVM) call(ctx *gLuaContext) (interface{}, error) {
 }
 
 func (gl *gLuaVM) resume(ctx *gLuaContext) (interface{}, error) {
-	var (
-		thread *gLuaThread
-		res    interface{}
-		err    error
-	)
-
-	thread, err = findLuaState(ctx.threadId)
-	if err != nil {
+	thread, ok := gl.threads[ctx.threadId]
+	if ok == false {
 		return nil, errors.New("Invalid Lua Thread")
 	}
-	res, err = thread.resume(ctx.args...)
+	res, err := thread.resume(ctx.args...)
 	if err != nil && err.Error() == "LUA_YIELD" {
 		return nil, err
 	} else {

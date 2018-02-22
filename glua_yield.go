@@ -16,7 +16,7 @@ var (
 )
 
 func init() {
-	yieldCache = make(map[int64]*yieldContext)
+	yieldCache = make(map[int64]*gLuaYieldContext)
 }
 
 type gLuaYieldContext struct {
@@ -27,7 +27,7 @@ type gLuaYieldContext struct {
 //yield method
 func storeYieldContext(vm *C.struct_lua_State, methodName string, args ...interface{}) {
 	if vm == nil {
-		return errors.New("Invalid Lua State")
+		panic(errors.New("Invalid Lua VM"))
 	}
 	vmKey := generateLuaStateId(vm)
 
