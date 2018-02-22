@@ -11,38 +11,20 @@ import (
 //#include "glua.h"
 import "C"
 
-type thread struct {
-	vmKey int64
-	vm    *C.struct_lua_State
+type gLuaThread struct {	
+	id	int64
+	thread		*C.struct_lua_State
+	dummyCache	map[int64]interface{}
 }
 
-func newThread(vm *C.struct_lua_State) *thread {
-	vmKey, thread := createLuaThread(vm)
-	C.register_go_method(_L)
-	return &thread{vmKey: vmKey, vm: _L}
-}
-
-func (t *thread) destory(vm *C.struct_lua_State) {
-	cleanDummy(vm)
-	var (
-		index C.int
-		count C.int
-	)
-	count = C.lua_gettop(vm)
-	for index = 1; index <= count; index++ {
-		vType := C.lua_type(vm, index)
-		if vType == C.LUA_TTHREAD {
-			ptr := C.lua_tothread(vm, index)
-			if ptr == t.vm {
-				C.lua_remove(vm, index)
-				t.vm = nil
-				return
-			}
-		}
+func newGLuaThread(vm *C.struct_lua_State)  *GLuaThread {
+	gl := &GLuaThread{
+		dummyCache: make(map[int64]interface{}),
 	}
+	gl.threadId, gl.thread = createLuaThread(vm)
 }
 
-func (t *thread) call(scriptPath string, methodName string, args ...interface{}) (interface{}, error) {
+func (t *GLuaThread) call(scriptPath string, methodName string, args ...interface{}) (interface{}, error) {
 	_, err := scripts.Commit(func(data *async.KVData) (interface{}, error) {
 		target, err := data.Get(scriptPath)
 		if err == nil {
@@ -105,7 +87,7 @@ func (t *thread) call(scriptPath string, methodName string, args ...interface{})
 	}
 }
 
-func (t *thread) resume(args ...interface{}) (interface{}, error) {
+func (t *GLuaThread)resume(args ...interface{}) (interface{}, error) {
 	pushToLua(t.vm, args...)
 	num := C.lua_gettop(t.vm)
 	ret := C.lua_resume(t.vm, num)
@@ -130,5 +112,5 @@ func (t *thread) resume(args ...interface{}) (interface{}, error) {
 			temp := C.GoString(C.glua_tostring(t.vm, -1))
 			return nil, errors.New(temp)
 		}
-	}
+	}	
 }
