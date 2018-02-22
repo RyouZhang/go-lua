@@ -25,14 +25,14 @@ func (t *gLuaThread) destory() {
 }
 
 func (t *gLuaThread) call(scriptPath string, methodName string, args ...interface{}) (interface{}, error) {
-	target, err := loadScript(scriptPath)
+	target, err := LoadScript(scriptPath)
 	if err != nil {
 		return nil, err
 	}
 
 	ret := C.gluaL_dostring(t.thread, C.CString(target))
 	if ret != C.LUA_OK {
-		expireScript(scriptPath)
+		ExpireScript(scriptPath)
 		errStr := C.GoString(C.glua_tostring(t.thread, -1))
 		return nil, errors.New(errStr)
 	}

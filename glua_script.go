@@ -14,19 +14,19 @@ func init() {
 	scripts = make(map[string]string)
 }
 
-func refreshScriptCache() {
+func RefreshScriptCache() {
 	scriptRW.Lock()
 	defer scriptRW.Unlock()
 	scripts = make(map[string]string)
 }
 
-func expireScript(filePath string) {
+func ExpireScript(filePath string) {
 	scriptRW.Lock()
 	defer scriptRW.Unlock()
 	delete(scripts, filePath)
 }
 
-func loadScript(filePath string) (string, error) {
+func LoadScript(filePath string) (string, error) {
 	scriptRW.RLock()
 	target, ok := scripts[filePath]
 	scriptRW.RUnlock()
