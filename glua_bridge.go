@@ -21,3 +21,16 @@ func LuaNumberToInt(value interface{}) (int, error) {
 		}
 	}
 }
+
+func LuaNumberToFloat32(value interface{}) (float32, error) {
+	switch value.(type) {
+	case C.lua_Number:
+		{
+			return float32(value.(C.lua_Number)), nil
+		}
+	default:
+		{
+			return 0, errors.New("Invalid Type")
+		}
+	}
+}
