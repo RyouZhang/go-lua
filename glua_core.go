@@ -1,6 +1,7 @@
 package glua
 
 import (
+	"container/list"
 	"runtime"
 	"sync"
 )
@@ -17,7 +18,7 @@ var (
 
 type gLuaCore struct {
 	queue    chan *gLuaContext
-	vms      []*gLuaVM
+	vms      *list.List
 	idles    chan *gLuaVM
 	waitting []*gLuaContext
 	callback map[int64][]*gLuaContext
@@ -28,14 +29,14 @@ func getCore() *gLuaCore {
 		count := runtime.NumCPU()
 		core = &gLuaCore{
 			queue:    make(chan *gLuaContext, 128),
-			vms:      make([]*gLuaVM, 0),
+			vms:      list.New(),
 			idles:    make(chan *gLuaVM, count),
 			waitting: make([]*gLuaContext, 0),
 			callback: make(map[int64][]*gLuaContext),
 		}
 		for i := 0; i < count; i++ {
 			vm := newGLuaVM()
-			core.vms = append(core.vms, vm)
+			core.vms.PushBack(vm)
 		}
 		go core.loop()
 	})
@@ -66,7 +67,7 @@ func (c *gLuaCore) loop() {
 			}
 		case vm := <-c.idles:
 			{
-				c.vms = append(c.vms, vm)
+				c.vms.PushBack(vm)
 				c.scheduler()
 			}
 		}
@@ -74,20 +75,19 @@ func (c *gLuaCore) loop() {
 }
 
 func (c *gLuaCore) scheduler() {
+	current := c.vms.Front()
 	for {
-		if len(c.vms) == 0 {
+		if current == nil {
 			return
 		}
 
-		vm := c.vms[0]
-		if len(c.vms) > 1 {
-			c.vms = c.vms[1:]
-		} else {
-			c.vms = []*gLuaVM{}
-		}
-
+		vm := current.Value.(*gLuaVM)
 		target := c.callback[vm.id]
 		if len(target) > 0 {
+			temp := current.Next()
+			c.vms.Remove(current)
+			current = temp
+
 			ctx := target[0]
 			if len(target) > 1 {
 				c.callback[vm.id] = target[1:]
@@ -102,19 +102,27 @@ func (c *gLuaCore) scheduler() {
 			}()
 			continue
 		}
-		if len(c.waitting) > 0 {
-			ctx := c.waitting[0]
-			if len(target) > 1 {
-				c.waitting = c.waitting[1:]
-			} else {
-				c.waitting = []*gLuaContext{}
-			}
-			go func() {
-				defer func() {
-					c.idles <- vm
-				}()
-				vm.process(ctx)
-			}()
+
+		if len(c.waitting) == 0 {
+			current = current.Next()
+			continue
 		}
+
+		temp := current.Next()
+		c.vms.Remove(current)
+		current = temp
+
+		ctx := c.waitting[0]
+		if len(target) > 1 {
+			c.waitting = c.waitting[1:]
+		} else {
+			c.waitting = []*gLuaContext{}
+		}
+		go func() {
+			defer func() {
+				c.idles <- vm
+			}()
+			vm.process(ctx)
+		}()
 	}
 }

@@ -188,7 +188,7 @@ func pullFromLua(L *C.struct_lua_State, index int) interface{} {
 			ptr := C.glua_touserdata(L, -1)
 			target, err := findDummy(L, ptr)
 			if err != nil {
-				return nil			
+				return nil
 			} else {
 				return target
 			}
