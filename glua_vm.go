@@ -18,13 +18,13 @@ type gLuaVM struct {
 
 func newGLuaVM() *gLuaVM {
 	gl := &gLuaVM{
-		threadDic:make(map[int64]*GLuaThread),
+		threadDic:make(map[int64]*gLuaThread),
 	}
 	gl.vmId, gl.vm = createLuaState()
 	return gl
 }
 
-func (gl *gLuaVM)destoryThread(t *GLuaThread) {
+func (gl *gLuaVM)destoryThread(t *gLuaThread) {
 	t.destory()
 	delete(gl.threadDic, t.id)
 	var (
@@ -45,7 +45,7 @@ func (gl *gLuaVM)destoryThread(t *GLuaThread) {
 	}
 }
 
-func (gl *gLuaVM)call(ctx *GLuaContext) (interface{}, error) {
+func (gl *gLuaVM)call(ctx *gLuaContext) (interface{}, error) {
 	thread := newGLuaThread(gl.vm)	
 	gl.threadDic[thread.id] = thread
 	
@@ -63,7 +63,7 @@ func (gl *gLuaVM)call(ctx *GLuaContext) (interface{}, error) {
 	}
 }
 
-func (gl *gLuaVM)resume(ctx *GLuaContext) (interface{}, error) {
+func (gl *gLuaVM)resume(ctx *gLuaContext) (interface{}, error) {
 	thread, ok := gl.threadDic[ctx.threadId]
 	if false == ok {
 		return nil, errors.New("Invalid Lua Thread")

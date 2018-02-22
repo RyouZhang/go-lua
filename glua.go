@@ -22,7 +22,19 @@ Resume:
 	case error:
 		{
 			if res.(error).Error() == "LUA_YIELD" {
-				//todo process yieldcontxt
+				yctx, err := loadYieldContext(ctx.threadId)
+				if err != nil {
+					return nil, err
+				}
+				go func() {
+					res, err := callExternMethod(yctx.methodName, yctx.args...)
+					if err == nil {
+						ctx.args = []interface{}{res, nil}
+					} else {
+						ctx.args = []interface{}{res, err.Error()}
+					}
+					getCore().push(ctx)
+				}()
 				goto Resume
 			} else {
 				return nil, res.(error)
