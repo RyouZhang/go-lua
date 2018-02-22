@@ -17,8 +17,3 @@ type gLuaContext struct {
 	args       []interface{}
 	callback   chan interface{}
 }
-
-type gLuaYieldContext struct {
-	methodName string
-	args       []interface{}
-}

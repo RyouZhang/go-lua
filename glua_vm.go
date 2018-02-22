@@ -1,9 +1,7 @@
 package glua
 
 import (
-	"sync"
 	"errors"
-	"unsafe"
 )
 
 // #cgo CFLAGS: -I/opt/luajit/include/luajit-2.1
@@ -12,21 +10,21 @@ import (
 import "C"
 
 
-type GLuaVM struct {
+type gLuaVM struct {
 	vmId	int64
 	vm		*C.struct_lua_State
-	threadDic map[int64]*GLuaThread
+	threadDic map[int64]*gLuaThread
 }
 
-func newGLuaVM() *GLuaVM {
-	gl := &GLuaVM{
+func newGLuaVM() *gLuaVM {
+	gl := &gLuaVM{
 		threadDic:make(map[int64]*GLuaThread),
 	}
 	gl.vmId, gl.vm = createLuaState()
 	return gl
 }
 
-func (gl *GLuaVM)destoryThread(t *GLuaThread) {
+func (gl *gLuaVM)destoryThread(t *GLuaThread) {
 	t.destory()
 	delete(gl.threadDic, t.id)
 	var (
@@ -47,7 +45,7 @@ func (gl *GLuaVM)destoryThread(t *GLuaThread) {
 	}
 }
 
-func (gl *GLuaVM)call(ctx *GLuaContext) (interface{}, error) {
+func (gl *gLuaVM)call(ctx *GLuaContext) (interface{}, error) {
 	thread := newGLuaThread(gl.vm)	
 	gl.threadDic[thread.id] = thread
 	
@@ -65,13 +63,13 @@ func (gl *GLuaVM)call(ctx *GLuaContext) (interface{}, error) {
 	}
 }
 
-func (gl *GLuaVM)resume(ctx *GLuaContext) (interface{}, error) {
+func (gl *gLuaVM)resume(ctx *GLuaContext) (interface{}, error) {
 	thread, ok := gl.threadDic[ctx.threadId]
 	if false == ok {
 		return nil, errors.New("Invalid Lua Thread")
 	}
 	res, err := thread.resume(ctx.args...)
-	if err != nil && err.Error() == "LUA_YIELD" 
+	if err != nil && err.Error() == "LUA_YIELD" {
 		return nil, err
 	} else {
 		gl.destoryThread(thread)

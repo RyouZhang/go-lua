@@ -23,7 +23,7 @@ type gLuaCore struct {
 	working int
 }
 
-func gLuaCore() *gLuaCore {
+func getCore() *gLuaCore {
 	coreOnce.Do(func() {
 		count := runtime.NumCPU()
 		core = &gLuaCore{

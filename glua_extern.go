@@ -2,9 +2,6 @@ package glua
 
 import (
 	"errors"
-	"io/ioutil"
-	"net/http"
-	"reflect"
 )
 
 // #cgo CFLAGS: -I/opt/luajit/include/luajit-2.1

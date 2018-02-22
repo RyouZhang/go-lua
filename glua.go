@@ -14,7 +14,7 @@ func Call(filePath string, methodName string, args ...interface{}) (interface{},
 		args:       args,
 		callback:   callback,
 	}
-	gLuaCore().push(ctx)
+	getCore().push(ctx)
 
 Resume:
 	res := <- ctx.callback
@@ -25,7 +25,7 @@ Resume:
 				//todo process yieldcontxt
 				goto Resume
 			} else {
-				return nil, err
+				return nil, res.(error)
 			}
 		}
 	default:

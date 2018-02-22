@@ -17,14 +17,14 @@ type gLuaThread struct {
 	dummyCache	map[int64]interface{}
 }
 
-func newGLuaThread(vm *C.struct_lua_State)  *GLuaThread {
-	gl := &GLuaThread{
+func newGLuaThread(vm *C.struct_lua_State)  *gLuaThread {
+	gl := &gLuaThread{
 		dummyCache: make(map[int64]interface{}),
 	}
 	gl.threadId, gl.thread = createLuaThread(vm)
 }
 
-func (t *GLuaThread) call(scriptPath string, methodName string, args ...interface{}) (interface{}, error) {
+func (t *gLuaThread) call(scriptPath string, methodName string, args ...interface{}) (interface{}, error) {
 	_, err := scripts.Commit(func(data *async.KVData) (interface{}, error) {
 		target, err := data.Get(scriptPath)
 		if err == nil {
@@ -87,7 +87,7 @@ func (t *GLuaThread) call(scriptPath string, methodName string, args ...interfac
 	}
 }
 
-func (t *GLuaThread)resume(args ...interface{}) (interface{}, error) {
+func (t *gLuaThread)resume(args ...interface{}) (interface{}, error) {
 	pushToLua(t.vm, args...)
 	num := C.lua_gettop(t.vm)
 	ret := C.lua_resume(t.vm, num)
