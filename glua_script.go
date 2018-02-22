@@ -2,36 +2,46 @@ package glua
 
 import (
 	"io/ioutil"
-
-	"github.com/RyouZhang/async-go"
+	"sync"
 )
 
 var (
-	scripts *async.KVCache
+	scripts  map[string]string
+	scriptRW sync.RWMutex
 )
 
 func init() {
-	scripts = async.NewKVCache()
+	scripts = make(map[string]string)
 }
 
 func refreshScriptCache() {
-	scripts.Commit(func(data *async.KVData) (interface{}, error) {
-		data.Clean()
-		return nil, nil
-	})
+	scriptRW.Lock()
+	defer scriptRW.Unlock()
+	scripts = make(map[string]string)
 }
 
 func expireScript(filePath string) {
-	scripts.Commit(func(data *async.KVData) (interface{}, error) {
-		data.Del(filePath)
-		return nil, nil
-	})
+	scriptRW.Lock()
+	defer scriptRW.Unlock()
+	delete(scripts, filePath)
 }
 
 func loadScript(filePath string) (string, error) {
+	scriptRW.RLock()
+	target, ok := scripts[filePath]
+	scriptRW.RUnlock()
+	if ok {		
+		return target, nil
+	}
+
 	raw, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return "", err
 	}
-	return string(raw), nil
+	scriptRW.Lock()
+	defer scriptRW.Unlock()
+
+	data := string(raw)
+	scripts[filePath] = data
+	return data, nil
 }

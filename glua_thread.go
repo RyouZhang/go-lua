@@ -2,8 +2,6 @@ package glua
 
 import (
 	"errors"
-
-	"github.com/RyouZhang/async-go"
 )
 
 // #cgo CFLAGS: -I/opt/luajit/include/luajit-2.1
@@ -27,35 +25,22 @@ func (t *gLuaThread) destory() {
 }
 
 func (t *gLuaThread) call(scriptPath string, methodName string, args ...interface{}) (interface{}, error) {
-	_, err := scripts.Commit(func(data *async.KVData) (interface{}, error) {
-		target, err := data.Get(scriptPath)
-		if err == nil {
-			ret := C.gluaL_dostring(t.thread, C.CString(target.(string)))
-			if ret == C.LUA_OK {
-				return target, nil
-			}
-			data.Del(scriptPath)
-		}
-		script, err := loadScript(scriptPath)
-		if err != nil {
-			return nil, err
-		}
-		ret := C.gluaL_dostring(t.thread, C.CString(script))
-		if ret == C.LUA_OK {
-			data.Set(scriptPath, script)
-			return script, nil
-		} else {
-			errStr := C.GoString(C.glua_tostring(t.thread, -1))
-			return nil, errors.New(errStr)
-		}
-	})
+	target, err := loadScript(scriptPath)
 	if err != nil {
 		return nil, err
+	}	
+
+	ret := C.gluaL_dostring(t.thread, C.CString(target))
+	if ret != C.LUA_OK {
+		expireScript(scriptPath)
+		errStr := C.GoString(C.glua_tostring(t.thread, -1))
+		return nil, errors.New(errStr)
 	}
+
 	C.glua_getglobal(t.thread, C.CString(methodName))
 	pushToLua(t.thread, args...)
 
-	ret := C.lua_resume(t.thread, C.int(len(args)))
+	ret = C.lua_resume(t.thread, C.int(len(args)))
 	switch ret {
 	case C.LUA_OK:
 		{
