@@ -29,13 +29,21 @@ func RegisterExternMethod(methodName string, method func(...interface{}) (interf
 //export sync_go_method
 func sync_go_method(vm *C.struct_lua_State) C.int {
 	count := int(C.lua_gettop(vm))
-	methodName := C.GoString(C.glua_tostring(vm, 1))
-
-	args := make([]interface{}, 0)
-	for i := 2; i <= count; i++ {
-		args = append(args, pullFromLua(vm, i))
+	args := make([]interface{}, count)
+	for {		
+		count = int(C.lua_gettop(vm))
+		if count == 0 {
+			break
+		}
+		args[count-1] = pullFromLua(vm, -1)
+		C.glua_pop(vm, 1)
+	}		
+	methodName := args[0].(string)
+	if len(args) > 1 {
+		args = args[1:]
+	} else {
+		args = make([]interface{}, 0)
 	}
-	C.glua_pop(vm, -1)
 
 	tagetMethod, ok := methodDic[methodName]
 	if false == ok {
@@ -58,13 +66,22 @@ func sync_go_method(vm *C.struct_lua_State) C.int {
 //export async_go_method
 func async_go_method(vm *C.struct_lua_State) C.int {
 	count := int(C.lua_gettop(vm))
-	methodName := C.GoString(C.glua_tostring(vm, 1))
-
-	args := make([]interface{}, 0)
-	for i := 2; i <= count; i++ {
-		args = append(args, pullFromLua(vm, i))
+	args := make([]interface{}, count)
+	for {		
+		count = int(C.lua_gettop(vm))
+		if count == 0 {
+			break
+		}
+		args[count-1] = pullFromLua(vm, -1)
+		C.glua_pop(vm, 1)
+	}		
+	methodName := args[0].(string)
+	if len(args) > 1 {
+		args = args[1:]
+	} else {
+		args = make([]interface{}, 0)
 	}
-	C.glua_pop(vm, -1)
+
 	storeYieldContext(vm, methodName, args...)
 	return 0
 }

@@ -183,9 +183,8 @@ func pullFromLua(L *C.struct_lua_State, index int) interface{} {
 			return pullLuaTable(L)
 		}
 	case C.LUA_TLIGHTUSERDATA:
-	case C.LUA_TUSERDATA:
 		{
-			ptr := C.glua_touserdata(L, -1)
+			ptr := C.glua_touserdata(L, C.int(index))
 			target, err := findDummy(L, ptr)
 			if err != nil {
 				return nil
