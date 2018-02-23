@@ -17,11 +17,7 @@ var (
 func test_sum(args ...interface{}) (interface{}, error) {
 	sum := 0
 	for _, arg := range args {
-		temp, err := glua.LuaNumberToInt(arg)
-		if err != nil {
-			return nil, err
-		}
-		sum = sum + temp
+		sum = sum + int(arg.(int64))
 	}
 	return sum, nil
 }
@@ -50,7 +46,7 @@ func main() {
 	fmt.Println(res, err)
 
 	fmt.Println(time.Now())
-	res, err = glua.Call("script.lua", "test_args", 24)
+	res, err = glua.Call("script.lua", "test_args", 69)
 	fmt.Println(time.Now())
 	fmt.Println(res, err)
 }

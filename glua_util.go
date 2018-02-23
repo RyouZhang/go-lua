@@ -3,6 +3,7 @@ package glua
 import (
 	"errors"
 	"fmt"
+	"math"
 )
 
 // #cgo CFLAGS: -I/opt/luajit/include/luajit-2.1
@@ -126,7 +127,12 @@ func pullLuaTable(_L *C.struct_lua_State) interface{} {
 			}
 		case 3:
 			{
-				value = C.glua_tonumber(_L, -1)
+				temp := float64(C.glua_tonumber(_L, -1))
+				if math.Ceil(temp) > temp {
+					value = temp
+				} else {
+					value = int64(temp)
+				}
 			}
 		case 4:
 			{
@@ -171,8 +177,13 @@ func pullFromLua(L *C.struct_lua_State, index int) interface{} {
 			return true
 		}
 	case C.LUA_TNUMBER:
-		{
-			return C.lua_tonumber(L, C.int(index))
+		{	
+			temp := float64(C.glua_tonumber(L, -1))
+			if math.Ceil(temp) > temp {
+				return temp
+			} else {
+				return int64(temp)
+			}
 		}
 	case C.LUA_TSTRING:
 		{
