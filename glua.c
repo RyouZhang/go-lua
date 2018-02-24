@@ -17,7 +17,7 @@ void glua_getglobal(lua_State* _L, char* name) {
 void glua_setglobal(lua_State* _L, char* name) {
 	lua_setglobal(_L, name);
 }
-void glua_pushlightuserdata(lua_State* _L, int* obj) {
+void glua_pushlightuserdata(lua_State* _L, void* obj) {
 	lua_pushlightuserdata(_L, obj);
 }
 int glua_pcall(lua_State* _L, int args, int results) {
@@ -42,9 +42,8 @@ lua_State *glua_tothread(lua_State* _L, int index) {
 int glua_istable(lua_State* _L, int index) {
 	return lua_istable(_L, index);
 }
-int* glua_touserdata(lua_State* _L, int index) {
-	void* ptr = lua_touserdata(_L, index);
-	return (int*)ptr;
+void* glua_touserdata(lua_State* _L, int index) {
+	return lua_touserdata(_L, index);
 }
 
 void register_go_method(lua_State* _L) {
