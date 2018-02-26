@@ -1,9 +1,11 @@
 package glua
 
 import (
+	"fmt"
 	"errors"
 	"sync"
 	"unsafe"
+	"strconv"
 )
 
 // #cgo CFLAGS: -I/opt/luajit/include/luajit-2.1
@@ -21,7 +23,9 @@ func init() {
 }
 
 func generateLuaStateId(vm *C.struct_lua_State) int64 {
-	return int64(*((*C.longlong)(unsafe.Pointer(vm))))
+	ptr := unsafe.Pointer(vm)
+	vmKey, _ := strconv.ParseInt(fmt.Sprintf("%d", ptr), 10, 64)
+	return vmKey
 }
 
 func createLuaState() (int64, *C.struct_lua_State) {

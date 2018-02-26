@@ -26,8 +26,8 @@ func init() {
 func pushDummy(vm *C.struct_lua_State, obj interface{}) unsafe.Pointer {
 	vmKey := generateLuaStateId(vm)
 
-	addr, _ := strconv.ParseInt(fmt.Sprintf("%d", &obj), 10, 64)
-	ptr := unsafe.Pointer(&addr)
+	// addr, _ := strconv.ParseInt(fmt.Sprintf("%d", &obj), 10, 64)
+	ptr := unsafe.Pointer(&obj)
 	dummyId, _ := strconv.ParseInt(fmt.Sprintf("%d", ptr), 10, 64)
 
 	dummyRW.Lock()
