@@ -21,7 +21,7 @@ func init() {
 }
 
 func generateLuaStateId(vm *C.struct_lua_State) int64 {
-	return int64(*((*C.int)(unsafe.Pointer(vm))))
+	return int64(*((*C.longlong)(unsafe.Pointer(vm))))
 }
 
 func createLuaState() (int64, *C.struct_lua_State) {
