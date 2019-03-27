@@ -1,11 +1,11 @@
 package glua
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
+	"strconv"
 	"sync"
 	"unsafe"
-	"strconv"
 )
 
 // #cgo CFLAGS: -I/opt/luajit/include/luajit-2.1

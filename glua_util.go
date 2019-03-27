@@ -177,7 +177,7 @@ func pullFromLua(L *C.struct_lua_State, index int) interface{} {
 			return true
 		}
 	case C.LUA_TNUMBER:
-		{	
+		{
 			temp := float64(C.glua_tonumber(L, -1))
 			if math.Ceil(temp) > temp {
 				return temp

@@ -30,14 +30,14 @@ func RegisterExternMethod(methodName string, method func(...interface{}) (interf
 func sync_go_method(vm *C.struct_lua_State) C.int {
 	count := int(C.lua_gettop(vm))
 	args := make([]interface{}, count)
-	for {		
+	for {
 		count = int(C.lua_gettop(vm))
 		if count == 0 {
 			break
 		}
 		args[count-1] = pullFromLua(vm, -1)
 		C.glua_pop(vm, 1)
-	}		
+	}
 	methodName := args[0].(string)
 	if len(args) > 1 {
 		args = args[1:]
@@ -67,14 +67,14 @@ func sync_go_method(vm *C.struct_lua_State) C.int {
 func async_go_method(vm *C.struct_lua_State) C.int {
 	count := int(C.lua_gettop(vm))
 	args := make([]interface{}, count)
-	for {		
+	for {
 		count = int(C.lua_gettop(vm))
 		if count == 0 {
 			break
 		}
 		args[count-1] = pullFromLua(vm, -1)
 		C.glua_pop(vm, 1)
-	}		
+	}
 	methodName := args[0].(string)
 	if len(args) > 1 {
 		args = args[1:]
