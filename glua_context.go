@@ -2,8 +2,8 @@ package glua
 
 import ()
 
-// #cgo CFLAGS: -I/opt/luajit/include/luajit-2.1
-// #cgo LDFLAGS:  -L/opt/luajit/lib -lluajit -ldl -lm
+// #cgo CFLAGS: -I/usr/local/include/luajit-2.1
+// #cgo LDFLAGS:  -L/usr/local/lib -lluajit -ldl -lm
 //#include "glua.h"
 import "C"
 
