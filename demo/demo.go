@@ -54,4 +54,9 @@ func main() {
 	res, err = glua.Call("script.lua", "fib", 35)
 	fmt.Println(time.Now().Sub(s))
 	fmt.Println(res, err)
+
+	s = time.Now()
+	res, err = glua.Call("script.lua", "fibt", 35)
+	fmt.Println(time.Now().Sub(s))
+	fmt.Println(res, err)	
 }

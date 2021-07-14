@@ -8,6 +8,19 @@ function fib(n)
     return fib(n-1) + fib(n-2)
 end
 
+function fibt(n)
+    return fibc(n, 0, 1)
+end
+
+function fibc(n, a, b)
+    if n == 0 then
+        return a
+    else
+        if n == 1 then return b end
+    end
+    return fibc(n-1, b, a+b)
+end
+
 function test_args(n)
     res, err = sync_go_method('test_sum', 1,2,3,4,5,6,n)
     if err == nil then
