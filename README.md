@@ -7,7 +7,8 @@ use lua in golang, go luajit glue,very  fast, support coroutine
 
 | | fib(35) | fibt(35) |  Language (Type)  |
 | :--- |    ---: |     ---: |  :---: |
-| [**Tengo**](https://github.com/d5/tengo) | `2,315ms` | `3ms` | Tengo (VM) |
+| [**go-lua**](https://github.com/RyouZhang/go-lua) | `110ms` | `1.5ms` | Luajit(VM) |
+| [Tengo](https://github.com/d5/tengo) | `2,315ms` | `3ms` | Tengo (VM) |
 | [go-lua](https://github.com/Shopify/go-lua) | `4,028ms` | `3ms` | Lua (VM) |
 | [GopherLua](https://github.com/yuin/gopher-lua) | `4,409ms` | `3ms` | Lua (VM) |
 | [goja](https://github.com/dop251/goja) | `5,194ms` | `4ms` | JavaScript (VM) |
@@ -16,7 +17,6 @@ use lua in golang, go luajit glue,very  fast, support coroutine
 | [Yaegi](https://github.com/containous/yaegi) | `11,715ms` | `10ms` | Yaegi (Interpreter) |
 | [otto](https://github.com/robertkrimen/otto) | `48,539ms` | `6ms` | JavaScript (Interpreter) |
 | [Anko](https://github.com/mattn/anko) | `52,821ms` | `6ms` | Anko (Interpreter) |
-| [go-lua](https://github.com/RyouZhang/go-lua) | `110ms` | `1.5ms` | Luajit(VM) |
 | - | - | - | - |
 | Go | `47ms` | `2ms` | Go (Native) |
 | Lua | `756ms` | `2ms` | Lua (Native) |
