@@ -1,7 +1,8 @@
 # go-lua
 
-use lua in golang, go luajit glue,very  fast, support coroutine
+embed lua script language for Go
 
+go luajit glue,very  fast, support lua coroutine
 
 ## Benchmark
 
