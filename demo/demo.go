@@ -61,6 +61,11 @@ func main() {
 	fmt.Println(res, err)
 
 	s = time.Now()
+	res, err = glua.NewLuaAction().WithScriptPath("script.lua").WithEntrypoint("fibt").AddParam(35).Execute(context.Background())
+	fmt.Println(time.Now().Sub(s))
+	fmt.Println(res, err)
+
+	s = time.Now()
 	res, err = glua.NewLuaAction().WithScriptPath("script.lua").WithEntrypoint("test_args").AddParam(69).Execute(context.Background())
 	fmt.Println(time.Now().Sub(s))
 	fmt.Println(res, err)
