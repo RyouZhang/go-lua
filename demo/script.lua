@@ -22,7 +22,7 @@ function fibc(n, a, b)
 end
 
 function test_args(n)
-    res, err = sync_go_method('test_sum', 1,2,3,4,5,6,n)
+    res, err = coroutine.yield('test_sum', 1,2,3,4,5,6,n)
     if err == nil then
         return res, nil
     else
@@ -34,10 +34,6 @@ function test_pull_table(obj)
     return {a=true, b=123, c='hello luajit', d={e=12, f='good golang'}, e={1,2,3,4,4}, 1, m=obj}, nil
 end
 
-function sync_json_encode()
-    return sync_go_method('json_decode', '{"a":"ads","b":12,"c":"sadh"}', 'hello world')
-end
-
 function async_json_encode()
-    return coroutine.yield(async_go_method('json_decode', '{"a":"ads","b":12,"c":"sadh"}', 'hello world'))
+    return coroutine.yield('json_decode', '{"a":"ads","b":12,"c":"sadh"}', 'hello world')
 end

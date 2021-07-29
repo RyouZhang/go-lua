@@ -47,8 +47,8 @@ void* glua_touserdata(lua_State* _L, int index) {
 }
 
 void register_go_method(lua_State* _L) {
-	lua_pushcfunction(_L, &sync_go_method);
-	lua_setglobal(_L, "sync_go_method");
-	lua_pushcfunction(_L, &async_go_method);
-	lua_setglobal(_L, "async_go_method");
+	// lua_pushcfunction(_L, &sync_go_method);
+	// lua_setglobal(_L, "sync_go_method");
+	// lua_pushcfunction(_L, &async_go_method);
+	// lua_setglobal(_L, "async_go_method");
 }
