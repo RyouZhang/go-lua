@@ -5,6 +5,7 @@ embed lua script language for Go
 go luajit glue,very  fast, support lua coroutine
 
 ## Demo
+easy use, like:
 	res, err := glua.NewLuaAction().WithScript(`
 	function fib(n)
 		if n == 0 then
