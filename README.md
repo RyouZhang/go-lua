@@ -41,4 +41,3 @@ Fibonacci(35)_
 _* [fibt(35)](https://github.com/d5/tengobench/blob/master/code/fibtc.tengo):
 [tail-call](https://en.wikipedia.org/wiki/Tail_call) version of Fibonacci(35)_  
 _* **Go** does not read the source code from file, while all other cases do_  
-_* See [here](https://github.com/d5/tengobench) for commands/codes used_
