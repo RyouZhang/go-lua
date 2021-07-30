@@ -1,4 +1,4 @@
-# go-lua
+# glua
 
 embed lua script language for Go
 
