@@ -34,8 +34,8 @@ func getScheduler() *vmScheduler {
 			shutdown:    make(chan bool),
 			resumes:     make([]*luaContext, 0),
 			waitings:    make([]*luaContext, 0),
-			luaCtxQueue: make(chan *luaContext, 128),
-			vmQueue:     make(chan *luaVm, 64),
+			luaCtxQueue: make(chan *luaContext, 16),
+			vmQueue:     make(chan *luaVm, 16),
 			vp:          newVMPool(16),
 		}
 		go schuelder.loop()
