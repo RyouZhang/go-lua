@@ -22,8 +22,8 @@ type luaContext struct {
 type vmScheduler struct {
 	shutdown    chan bool
 	resumes     []*luaContext
-	resumeQueue chan *luaContext
-	waitQueue   chan *luaContext
+	waitings    []*luaContext
+	luaCtxQueue chan *luaContext
 	vmQueue     chan *luaVm
 	vp          *vmPool
 }
@@ -33,8 +33,8 @@ func getScheduler() *vmScheduler {
 		schuelder = &vmScheduler{
 			shutdown:    make(chan bool),
 			resumes:     make([]*luaContext, 0),
-			waitQueue:   make(chan *luaContext, 128),
-			resumeQueue: make(chan *luaContext, 128),
+			waitings:    make([]*luaContext, 0),
+			luaCtxQueue: make(chan *luaContext, 128),
 			vmQueue:     make(chan *luaVm, 64),
 			vp:          newVMPool(16),
 		}
@@ -52,70 +52,91 @@ func (s *vmScheduler) loop() {
 			}
 		case vm := <-s.vmQueue:
 			{
-				var (
-					index  int
-					luaCtx *luaContext
-				)
-				for index, _ = range s.resumes {
-					luaCtx = s.resumes[index]
-					if luaCtx.luaStateId == vm.stateId {
-						break
-					}
-				}
+				luaCtx := s.pick(vm.stateId)
 				if luaCtx == nil {
 					s.vp.release(vm)
 					continue
 				}
-				switch {
-				case len(s.resumes) == 1:
-					s.resumes = []*luaContext{}
-				case index == len(s.resumes)-1:
-					s.resumes = s.resumes[:index-1]
-				case index == 0:
-					s.resumes = s.resumes[1:]
-				default:
-					s.resumes = append(s.resumes[:index], s.resumes[index+1:]...)
-				}
-				go func() {
-					defer func() {
-						s.vmQueue <- vm
-					}()
-					vm.resume(luaCtx.ctx, luaCtx)
-				}()
+				go s.run(vm, luaCtx)
 			}
-		case luaCtx := <-s.waitQueue:
+		case luaCtx := <-s.luaCtxQueue:
 			{
-				//select vm
-			RETRY:
-				vm := s.vp.accquire()
-				if vm.needDestory {
-					s.vmQueue <- vm
-					goto RETRY
+				switch luaCtx.status {
+				case 0:
+					{
+						vm := s.vp.accquire()
+						if vm == nil {
+							s.waitings = append(s.waitings, luaCtx)
+							continue
+						} else {
+							luaCtx.status = 1
+							go s.run(vm, luaCtx)
+						}
+					}
+				case 2:
+					{
+						vm := s.vp.find(luaCtx.luaStateId)
+						if vm == nil {
+							s.resumes = append(s.resumes, luaCtx)
+							continue
+						}
+						go s.run(vm, luaCtx)
+					}
 				}
-				luaCtx.status = 1
-				go func() {
-					defer func() {
-						s.vmQueue <- vm
-					}()
-					vm.run(luaCtx.ctx, luaCtx)
-				}()
-			}
-		case luaCtx := <-s.resumeQueue:
-			{
-				vm := s.vp.find(luaCtx.luaStateId)
-				if vm == nil {
-					s.resumes = append(s.resumes, luaCtx)
-					continue
-				}
-				go func() {
-					defer func() {
-						s.vmQueue <- vm
-					}()
-					vm.resume(luaCtx.ctx, luaCtx)
-				}()
 			}
 		}
 	}
+}
+
+func (s *vmScheduler) run(vm *luaVm, luaCtx *luaContext) {
+	defer func() {
+		s.vmQueue <- vm
+	}()
+	switch luaCtx.status {
+	case 2:
+		vm.resume(luaCtx.ctx, luaCtx)
+	default:
+		vm.run(luaCtx.ctx, luaCtx)
+	}
+}
+
+func (s *vmScheduler) pick(stateId int64) *luaContext {
+	var (
+		index  int
+		luaCtx *luaContext
+	)
+	// check resume list
+	for index, _ = range s.resumes {
+		luaCtx = s.resumes[index]
+		if luaCtx.luaStateId == stateId {
+			break
+		}
+	}
+	if luaCtx != nil {
+		switch {
+		case len(s.resumes) == 1:
+			s.resumes = []*luaContext{}
+		case index == len(s.resumes)-1:
+			s.resumes = s.resumes[:index-1]
+		case index == 0:
+			s.resumes = s.resumes[1:]
+		default:
+			s.resumes = append(s.resumes[:index], s.resumes[index+1:]...)
+		}
+		return luaCtx
+	}
+	// check waitings list
+	if len(s.waitings) == 0 {
+		return nil
+	}
+	luaCtx = s.waitings[0]
+	switch {
+	case len(s.waitings) == 1:
+		s.waitings = []*luaContext{}
+	default:
+		s.waitings = s.waitings[1:]
+	}
+	return luaCtx
 }
 
 func (s *vmScheduler) do(ctx context.Context, act *LuaAction) (interface{}, error) {
@@ -128,7 +149,7 @@ func (s *vmScheduler) do(ctx context.Context, act *LuaAction) (interface{}, erro
 		status:      0,
 	}
 
-	s.waitQueue <- luaCtx
+	s.luaCtxQueue <- luaCtx
 
 	res := <-luaCtx.callback
 	switch res.(type) {

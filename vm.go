@@ -116,7 +116,7 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 						}
 						luaCtx.act.params = []interface{}{nil, err}
 					}
-					getScheduler().resumeQueue <- luaCtx
+					getScheduler().luaCtxQueue <- luaCtx
 				}()
 				method, ok := luaCtx.act.funcs[methodName]
 				if ok {
@@ -190,7 +190,7 @@ func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 						}
 						luaCtx.act.params = []interface{}{nil, err}
 					}
-					getScheduler().waitQueue <- luaCtx
+					getScheduler().luaCtxQueue <- luaCtx
 				}()
 				method, ok := luaCtx.act.funcs[methodName]
 				if ok {

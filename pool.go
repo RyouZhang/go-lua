@@ -6,10 +6,9 @@ import (
 
 type vmPool struct {
 	maxVmCount int
-	vmCount    int
-	pool       sync.Pool
 	vmMutex    sync.Mutex
-	vmDic      map[int64]*luaVm
+	idleVmDic  map[int64]*luaVm
+	validVmDic map[int64]*luaVm
 }
 
 func newVMPool(maxVmCount int) *vmPool {
@@ -21,54 +20,46 @@ func newVMPool(maxVmCount int) *vmPool {
 	}
 	return &vmPool{
 		maxVmCount: maxVmCount,
-		vmDic:      make(map[int64]*luaVm),
-		pool: sync.Pool{
-			New: func() interface{} {
-				return newLuaVm()
-			},
-		},
+		validVmDic: make(map[int64]*luaVm),
+		idleVmDic:  make(map[int64]*luaVm),
 	}
 }
 
 func (vp *vmPool) accquire() *luaVm {
 	vp.vmMutex.Lock()
 	defer vp.vmMutex.Unlock()
-	vp.vmCount++
-	vm := vp.pool.Get().(*luaVm)
-	vp.vmDic[vm.stateId] = vm
+	// check idle vm
+	for _, vm := range vp.idleVmDic {
+		delete(vp.idleVmDic, vm.stateId)
+		return vm
+	}
+	// create new vm
+	if len(vp.validVmDic) == vp.maxVmCount {
+		return nil
+	}
+	vm := newLuaVm()
+	vp.validVmDic[vm.stateId] = vm
 	return vm
 }
 
 func (vp *vmPool) release(vm *luaVm) {
 	vp.vmMutex.Lock()
 	defer vp.vmMutex.Unlock()
-	delete(vp.vmDic, vm.stateId)
-	vp.vmCount--
 	if vm.needDestory && vm.resumeCount == 0 {
-		vm.destory()
-		return
-	}
-	if vp.vmCount > vp.maxVmCount && vm.resumeCount == 0 {
+		delete(vp.validVmDic, vm.stateId)
 		vm.destory()
 	} else {
-		vp.pool.Put(vm)
+		vp.idleVmDic[vm.stateId] = vm
 	}
 }
 
 func (vp *vmPool) find(stateId int64) *luaVm {
 	vp.vmMutex.Lock()
 	defer vp.vmMutex.Unlock()
-	_, ok := vp.vmDic[stateId]
+	vm, ok := vp.idleVmDic[stateId]
 	if ok {
-		return nil
-	}
-Find:
-	vm := vp.pool.Get().(*luaVm)
-	if vm.stateId == stateId {
-		vp.vmDic[stateId] = vm
+		delete(vp.idleVmDic, stateId)
 		return vm
-	} else {
-		vp.pool.Put(vm)
-		goto Find
 	}
+	return nil
 }
