@@ -3,6 +3,7 @@ package glua
 import (
 	"context"
 	"errors"
+	"sync"
 )
 
 // #cgo CFLAGS: -I/usr/local/include/luajit-2.1
@@ -11,14 +12,19 @@ import (
 import "C"
 
 var (
-	methodDic map[string]func(context.Context, ...interface{}) (interface{}, error)
+	methodMu  sync.RWMutex
+	methodDic map[string]LuaExternFunc
 )
 
+type LuaExternFunc func(context.Context, ...interface{}) (interface{}, error)
+
 func init() {
-	methodDic = make(map[string]func(context.Context, ...interface{}) (interface{}, error))
+	methodDic = make(map[string]LuaExternFunc)
 }
 
-func RegisterExternMethod(methodName string, method func(context.Context, ...interface{}) (interface{}, error)) error {
+func RegisterExternMethod(methodName string, method LuaExternFunc) error {
+	methodMu.Lock()
+	defer methodMu.Unlock()
 	_, ok := methodDic[methodName]
 	if ok {
 		return errors.New("Duplicate Method Name")
@@ -28,6 +34,8 @@ func RegisterExternMethod(methodName string, method func(context.Context, ...int
 }
 
 func callExternMethod(ctx context.Context, methodName string, args ...interface{}) (interface{}, error) {
+	methodMu.RLock()
+	defer methodMu.RUnlock()
 	tagetMethod, ok := methodDic[methodName]
 	if false == ok {
 		return nil, errors.New("Invalid Method Name")

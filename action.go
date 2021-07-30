@@ -4,8 +4,6 @@ import (
 	"context"
 )
 
-type LuaExternFunc func(context.Context, ...interface{}) (interface{}, error)
-
 type LuaAction struct {
 	script     string
 	scriptPath string
