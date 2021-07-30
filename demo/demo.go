@@ -2,17 +2,11 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"reflect"
 	"time"
 
 	glua "github.com/RyouZhang/go-lua"
-
-	"github.com/ugorji/go/codec"
-)
-
-var (
-	jh codec.JsonHandle
 )
 
 func test_sum(ctx context.Context, args ...interface{}) (interface{}, error) {
@@ -27,16 +21,11 @@ func json_decode(ctx context.Context, args ...interface{}) (interface{}, error) 
 	raw := args[0].(string)
 
 	var res map[string]interface{}
-	dec := codec.NewDecoderBytes([]byte(raw), &jh)
-	err := dec.Decode(&res)
+	err := json.Unmarshal([]byte(raw), &res)
 	return res, err
 }
 
 func main() {
-	jh.DecodeOptions.ReaderBufferSize = 128 * 1024 * 1024
-	jh.EncodeOptions.WriterBufferSize = 128 * 1024 * 1024
-	jh.DecodeOptions.SignedInteger = true
-	jh.DecodeOptions.MapType = reflect.TypeOf(map[string]interface{}(nil))
 
 	glua.RegisterExternMethod("json_decode", json_decode)
 	glua.RegisterExternMethod("test_sum", test_sum)
