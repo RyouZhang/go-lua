@@ -114,17 +114,17 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 						if !ok {
 							err = errors.New(fmt.Sprintf("%v", e))
 						}
-						luaCtx.act.nextParams = []interface{}{nil, err}
+						luaCtx.act.params = []interface{}{nil, err}
 					}
 					getScheduler().resumeQueue <- luaCtx
 				}()
-				method, ok := luaCtx.act.nextFuncs[methodName]
+				method, ok := luaCtx.act.funcs[methodName]
 				if ok {
 					res, err := method(ctx, args...)
-					luaCtx.act.nextParams = []interface{}{res, err}
+					luaCtx.act.params = []interface{}{res, err}
 				} else {
 					res, err := callExternMethod(ctx, methodName, args...)
-					luaCtx.act.nextParams = []interface{}{res, err}
+					luaCtx.act.params = []interface{}{res, err}
 				}
 			}()
 		}
@@ -140,7 +140,7 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 
 func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 	L := v.threadDic[luaCtx.luaThreadId]
-	pushToLua(L, luaCtx.act.nextParams...)
+	pushToLua(L, luaCtx.act.params...)
 	num := C.lua_gettop(L)
 	ret := C.lua_resume(L, num)
 	switch ret {
@@ -188,17 +188,17 @@ func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 						if !ok {
 							err = errors.New(fmt.Sprintf("%v", e))
 						}
-						luaCtx.act.nextParams = []interface{}{nil, err}
+						luaCtx.act.params = []interface{}{nil, err}
 					}
 					getScheduler().waitQueue <- luaCtx
 				}()
-				method, ok := luaCtx.act.nextFuncs[methodName]
+				method, ok := luaCtx.act.funcs[methodName]
 				if ok {
 					res, err := method(ctx, args...)
-					luaCtx.act.nextParams = []interface{}{res, err}
+					luaCtx.act.params = []interface{}{res, err}
 				} else {
 					res, err := callExternMethod(ctx, methodName, args...)
-					luaCtx.act.nextParams = []interface{}{res, err}
+					luaCtx.act.params = []interface{}{res, err}
 				}
 			}()
 		}
