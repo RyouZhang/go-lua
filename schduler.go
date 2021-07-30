@@ -25,6 +25,7 @@ type vmScheduler struct {
 	resumeQueue chan *luaContext
 	waitQueue   chan *luaContext
 	vmQueue     chan *luaVm
+	vp          *vmPool
 }
 
 func getScheduler() *vmScheduler {
@@ -35,6 +36,7 @@ func getScheduler() *vmScheduler {
 			waitQueue:   make(chan *luaContext, 128),
 			resumeQueue: make(chan *luaContext, 128),
 			vmQueue:     make(chan *luaVm, 64),
+			vp:          newVMPool(16),
 		}
 		go schuelder.loop()
 	})
@@ -61,7 +63,7 @@ func (s *vmScheduler) loop() {
 					}
 				}
 				if luaCtx == nil {
-					getVmPool().release(vm)
+					s.vp.release(vm)
 					continue
 				}
 				switch {
@@ -85,7 +87,7 @@ func (s *vmScheduler) loop() {
 			{
 				//select vm
 			RETRY:
-				vm := getVmPool().accquire()
+				vm := s.vp.accquire()
 				if vm.needDestory {
 					s.vmQueue <- vm
 					goto RETRY
@@ -100,7 +102,7 @@ func (s *vmScheduler) loop() {
 			}
 		case luaCtx := <-s.resumeQueue:
 			{
-				vm := getVmPool().find(luaCtx.luaStateId)
+				vm := s.vp.find(luaCtx.luaStateId)
 				if vm == nil {
 					s.resumes = append(s.resumes, luaCtx)
 					continue
