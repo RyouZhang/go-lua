@@ -7,16 +7,16 @@ go luajit glue,very  fast, support lua coroutine
 ## Demo
 easy use, like:
 ```go
-	res, err := glua.NewLuaAction().WithScript(`
-	function fib(n)
-		if n == 0 then
-			return 0
-		elseif n == 1 then
-			return 1
-		end
-		return fib(n-1) + fib(n-2)
+res, err := glua.NewLuaAction().WithScript(`
+function fib(n)
+	if n == 0 then
+		return 0
+	elseif n == 1 then
+		return 1
 	end
-	`).WithEntrypoint("fib").AddParam(35).Execute(context.Background())
+	return fib(n-1) + fib(n-2)
+end
+`).WithEntrypoint("fib").AddParam(35).Execute(context.Background())
 ```
 ## Benchmark
 
