@@ -34,8 +34,8 @@ func (a *LuaAction) WithEntrypoint(entrypoint string) *LuaAction {
 	return a
 }
 
-func (a *LuaAction) AddParam(param interface{}) *LuaAction {
-	a.params = append(a.params, param)
+func (a *LuaAction) AddParam(params ...interface{}) *LuaAction {
+	a.params = append(a.params, params...)
 	return a
 }
 
