@@ -105,6 +105,8 @@ func pushToLua(L *C.struct_lua_State, args ...interface{}) {
 			C.lua_pushnumber(L, C.lua_Number(arg.(uint)))
 		case int:
 			C.lua_pushnumber(L, C.lua_Number(arg.(int)))
+		case []byte:
+			C.lua_pushlstring(L, C.CString(string(arg.([]byte))), C.size_t(len(arg.([]byte))))			
 		case map[string]interface{}:
 			{
 				pushMapToLua(L, arg.(map[string]interface{}))
