@@ -7,7 +7,7 @@ go luajit glue,very  fast, support lua coroutine
 ## Demo
 easy use, like:
 ```go
-res, err := glua.NewLuaAction().WithScript(`
+res, err := glua.NewAction().WithScript(`
 function fib(n)
 	if n == 0 then
 		return 0
