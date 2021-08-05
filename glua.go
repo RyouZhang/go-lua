@@ -14,8 +14,8 @@ func init() {
 }
 
 type Options struct {
-	maxVmSize       int
-	createStateHook CreateLuaStateHook
+	maxVmSize           int
+	preloadScriptMethod func() string
 }
 
 func NewOptions() *Options {
@@ -29,8 +29,8 @@ func (opt *Options) WithMaxVMSize(maxVmSize int) *Options {
 	return opt
 }
 
-func (opt *Options) SetCreateLuaStateHook(method CreateLuaStateHook) *Options {
-	opt.createStateHook = method
+func (opt *Options) SetPreloadScripeMethod(method func() string) *Options {
+	opt.preloadScriptMethod = method
 	return opt
 }
 
