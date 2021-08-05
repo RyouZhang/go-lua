@@ -34,7 +34,7 @@ func (opt *Options) SetPreloadScripeMethod(method func() string) *Options {
 	return opt
 }
 
-func GlobaOptions(opts *Options) {
+func GlobalOptions(opts *Options) {
 	locker.Lock()
 	defer locker.Unlock()
 	globalOpts = opts
