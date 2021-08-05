@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-type LuaAction struct {
+type Action struct {
 	script     string
 	scriptPath string
 	entrypoint string
@@ -12,38 +12,38 @@ type LuaAction struct {
 	funcs      map[string]LuaExternFunc
 }
 
-func NewLuaAction() *LuaAction {
-	return &LuaAction{
+func NewAction() *Action {
+	return &Action{
 		params: make([]interface{}, 0),
 		funcs:  make(map[string]LuaExternFunc, 0),
 	}
 }
 
-func (a *LuaAction) WithScript(script string) *LuaAction {
+func (a *Action) WithScript(script string) *Action {
 	a.script = script
 	return a
 }
 
-func (a *LuaAction) WithScriptPath(scriptPath string) *LuaAction {
+func (a *Action) WithScriptPath(scriptPath string) *Action {
 	a.scriptPath = scriptPath
 	return a
 }
 
-func (a *LuaAction) WithEntrypoint(entrypoint string) *LuaAction {
+func (a *Action) WithEntrypoint(entrypoint string) *Action {
 	a.entrypoint = entrypoint
 	return a
 }
 
-func (a *LuaAction) AddParam(params ...interface{}) *LuaAction {
+func (a *Action) AddParam(params ...interface{}) *Action {
 	a.params = append(a.params, params...)
 	return a
 }
 
-func (a *LuaAction) AddFunc(methodName string, method LuaExternFunc) *LuaAction {
+func (a *Action) AddFunc(methodName string, method LuaExternFunc) *Action {
 	a.funcs[methodName] = method
 	return a
 }
 
-func (a *LuaAction) Execute(ctx context.Context) (interface{}, error) {
+func (a *Action) Execute(ctx context.Context) (interface{}, error) {
 	return getScheduler().do(ctx, a)
 }

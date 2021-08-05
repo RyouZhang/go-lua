@@ -31,7 +31,7 @@ func main() {
 	glua.RegisterExternMethod("test_sum", test_sum)
 
 	s := time.Now()
-	res, err := glua.NewLuaAction().WithScript(`
+	res, err := glua.NewAction().WithScript(`
 	function fib(n)
 		if n == 0 then
 			return 0
@@ -45,27 +45,27 @@ func main() {
 	fmt.Println(res, err)
 
 	s = time.Now()
-	res, err = glua.NewLuaAction().WithScriptPath("script.lua").WithEntrypoint("fib").AddParam(35).Execute(context.Background())
+	res, err = glua.NewAction().WithScriptPath("script.lua").WithEntrypoint("fib").AddParam(35).Execute(context.Background())
 	fmt.Println(time.Now().Sub(s))
 	fmt.Println(res, err)
 
 	s = time.Now()
-	res, err = glua.NewLuaAction().WithScriptPath("script.lua").WithEntrypoint("fibt").AddParam(35).Execute(context.Background())
+	res, err = glua.NewAction().WithScriptPath("script.lua").WithEntrypoint("fibt").AddParam(35).Execute(context.Background())
 	fmt.Println(time.Now().Sub(s))
 	fmt.Println(res, err)
 
 	s = time.Now()
-	res, err = glua.NewLuaAction().WithScriptPath("script.lua").WithEntrypoint("test_args").AddParam(69).Execute(context.Background())
+	res, err = glua.NewAction().WithScriptPath("script.lua").WithEntrypoint("test_args").AddParam(69).Execute(context.Background())
 	fmt.Println(time.Now().Sub(s))
 	fmt.Println(res, err)
 
 	s = time.Now()
-	res, err = glua.NewLuaAction().WithScriptPath("script.lua").WithEntrypoint("async_json_encode").Execute(context.Background())
+	res, err = glua.NewAction().WithScriptPath("script.lua").WithEntrypoint("async_json_encode").Execute(context.Background())
 	fmt.Println(time.Now().Sub(s))
 	fmt.Println(res, err)
 
 	s = time.Now()
-	res, err = glua.NewLuaAction().WithScriptPath("script.lua").WithEntrypoint("test_pull_table").AddParam(69).Execute(context.Background())
+	res, err = glua.NewAction().WithScriptPath("script.lua").WithEntrypoint("test_pull_table").AddParam(69).Execute(context.Background())
 	fmt.Println(time.Now().Sub(s))
 	fmt.Println(res, err)
 }

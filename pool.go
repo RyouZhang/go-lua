@@ -30,7 +30,7 @@ func (vp *vmPool) accquire() *luaVm {
 	defer vp.vmMutex.Unlock()
 	// check idle vm
 	for _, vm := range vp.idleVmDic {
-		
+
 		delete(vp.idleVmDic, vm.stateId)
 		return vm
 	}

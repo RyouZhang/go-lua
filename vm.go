@@ -126,7 +126,7 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 						luaCtx.act.params = append(res.([]interface{}), err)
 					default:
 						luaCtx.act.params = []interface{}{res, err}
-					}					
+					}
 				} else {
 					res, err := callExternMethod(ctx, methodName, args...)
 					switch res.(type) {
@@ -134,7 +134,7 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 						luaCtx.act.params = append(res.([]interface{}), err)
 					default:
 						luaCtx.act.params = []interface{}{res, err}
-					}	
+					}
 				}
 			}()
 		}
@@ -210,7 +210,7 @@ func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 						luaCtx.act.params = append(res.([]interface{}), err)
 					default:
 						luaCtx.act.params = []interface{}{res, err}
-					}	
+					}
 				} else {
 					res, err := callExternMethod(ctx, methodName, args...)
 					switch res.(type) {
@@ -218,7 +218,7 @@ func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 						luaCtx.act.params = append(res.([]interface{}), err)
 					default:
 						luaCtx.act.params = []interface{}{res, err}
-					}	
+					}
 				}
 			}()
 		}

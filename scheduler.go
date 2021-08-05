@@ -12,7 +12,7 @@ var (
 
 type luaContext struct {
 	ctx         context.Context
-	act         *LuaAction
+	act         *Action
 	luaStateId  int64
 	luaThreadId int64
 	callback    chan interface{}
@@ -36,7 +36,7 @@ func getScheduler() *vmScheduler {
 			waitings:    make([]*luaContext, 0),
 			luaCtxQueue: make(chan *luaContext, 16),
 			vmQueue:     make(chan *luaVm, 16),
-			vp:          newVMPool(16),
+			vp:          newVMPool(globalOpts.maxVmSize),
 		}
 		go schuelder.loop()
 	})
@@ -139,7 +139,7 @@ func (s *vmScheduler) pick(stateId int64) *luaContext {
 	return luaCtx
 }
 
-func (s *vmScheduler) do(ctx context.Context, act *LuaAction) (interface{}, error) {
+func (s *vmScheduler) do(ctx context.Context, act *Action) (interface{}, error) {
 	luaCtx := &luaContext{
 		ctx:         ctx,
 		act:         act,

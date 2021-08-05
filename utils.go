@@ -11,6 +11,8 @@ import (
 //#include "glua.h"
 import "C"
 
+type CreateLuaStateHook func(L *C.struct_lua_State)
+
 func generateLuaStateId(vm *C.struct_lua_State) int64 {
 	ptr := unsafe.Pointer(vm)
 	key, _ := strconv.ParseInt(fmt.Sprintf("%d", ptr), 10, 64)
@@ -23,6 +25,10 @@ func createLuaState() (int64, *C.struct_lua_State) {
 	C.luaL_openlibs(vm)
 	C.lua_gc(vm, C.LUA_GCRESTART, 0)
 	C.register_go_method(vm)
+
+	if globalOpts.createStateHook != nil {
+		globalOpts.createStateHook(vm)
+	}
 
 	return generateLuaStateId(vm), vm
 }
