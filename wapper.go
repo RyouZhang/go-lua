@@ -3,7 +3,7 @@ package glua
 import (
 	"errors"
 	"fmt"
-	"math"
+	"math"	
 )
 
 // #cgo CFLAGS: -I/usr/local/include/luajit-2.1
@@ -105,6 +105,12 @@ func pushToLua(L *C.struct_lua_State, args ...interface{}) {
 			C.lua_pushnumber(L, C.lua_Number(arg.(uint)))
 		case int:
 			C.lua_pushnumber(L, C.lua_Number(arg.(int)))
+		case bool:
+			if arg.(bool) {
+				C.lua_pushboolean(L, C.int(1))
+			} else {
+				C.lua_pushboolean(L, C.int(0))
+			}
 		case []byte:
 			C.lua_pushlstring(L, C.CString(string(arg.([]byte))), C.size_t(len(arg.([]byte))))
 		case map[string]interface{}:
