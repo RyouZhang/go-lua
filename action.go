@@ -6,6 +6,7 @@ import (
 
 type Action struct {
 	script     string
+	scriptMD5  string
 	scriptPath string
 	entrypoint string
 	params     []interface{}
@@ -21,6 +22,10 @@ func NewAction() *Action {
 
 func (a *Action) WithScript(script string) *Action {
 	a.script = script
+	return a
+}
+
+func (a *Action) WithScriptMD5(md5 string) *Action {
 	return a
 }
 

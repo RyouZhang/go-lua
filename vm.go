@@ -2,6 +2,7 @@ package glua
 
 import (
 	"context"
+	"crypto/md5"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -13,21 +14,23 @@ import (
 import "C"
 
 type luaVm struct {
-	stateId     int64
-	state       *C.struct_lua_State
-	resumeCount int
-	needDestory bool
-	threadDic   map[int64]*C.struct_lua_State
+	stateId      int64
+	state        *C.struct_lua_State
+	scriptMD5Dic map[string]bool
+	resumeCount  int
+	needDestory  bool
+	threadDic    map[int64]*C.struct_lua_State
 }
 
 func newLuaVm() *luaVm {
 	stateId, state := createLuaState()
 	return &luaVm{
-		stateId:     stateId,
-		state:       state,
-		resumeCount: 0,
-		needDestory: false,
-		threadDic:   make(map[int64]*C.struct_lua_State),
+		stateId:      stateId,
+		state:        state,
+		resumeCount:  0,
+		needDestory:  false,
+		scriptMD5Dic: make(map[string]bool),
+		threadDic:    make(map[int64]*C.struct_lua_State),
 	}
 }
 
@@ -42,7 +45,22 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 	ret := C.int(C.LUA_OK)
 
 	if len(luaCtx.act.script) > 0 {
-		ret = C.gluaL_dostring(L, C.CString(luaCtx.act.script))
+		if len(luaCtx.act.entrypoint) > 0 {
+			if len(luaCtx.act.scriptMD5) > 0 {
+				if _, ok := v.scriptMD5Dic[luaCtx.act.scriptMD5]; !ok {
+					v.scriptMD5Dic[luaCtx.act.scriptMD5] = true
+					ret = C.gluaL_dostring(L, C.CString(luaCtx.act.script))
+				}
+			} else {
+				scriptMD5 := fmt.Sprintf("%x", md5.Sum([]byte(luaCtx.act.script)))
+				if _, ok := v.scriptMD5Dic[scriptMD5]; !ok {
+					v.scriptMD5Dic[scriptMD5] = true
+					ret = C.gluaL_dostring(L, C.CString(luaCtx.act.script))
+				}
+			}
+		} else {
+			ret = C.gluaL_dostring(L, C.CString(luaCtx.act.script))
+		}
 	} else {
 		raw, err := ioutil.ReadFile(luaCtx.act.scriptPath)
 		if err != nil {
@@ -51,7 +69,15 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 			v.destoryThread(threadId, L)
 			return
 		}
-		ret = C.gluaL_dostring(L, C.CString(string(raw)))
+		if len(luaCtx.act.entrypoint) > 0 {
+			scriptMD5 := fmt.Sprintf("%x", md5.Sum(raw))
+			if _, ok := v.scriptMD5Dic[scriptMD5]; !ok {
+				v.scriptMD5Dic[scriptMD5] = true
+				ret = C.gluaL_dostring(L, C.CString(string(raw)))
+			}
+		} else {
+			ret = C.gluaL_dostring(L, C.CString(string(raw)))
+		}
 	}
 
 	if ret == C.LUA_OK && len(luaCtx.act.entrypoint) > 0 {

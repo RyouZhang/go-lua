@@ -3,7 +3,7 @@ package glua
 import (
 	"errors"
 	"fmt"
-	"math"	
+	"math"
 )
 
 // #cgo CFLAGS: -I/usr/local/include/luajit-2.1
