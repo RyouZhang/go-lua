@@ -14,7 +14,11 @@ func test_sum(ctx context.Context, args ...interface{}) (interface{}, error) {
 	for _, arg := range args {
 		sum = sum + int(arg.(int64))
 	}
-	return sum, nil
+	if sum%2 == 0 {
+		return sum, nil
+	} else {
+		return nil, fmt.Errorf("bad sum")
+	}
 }
 
 func json_decode(ctx context.Context, args ...interface{}) (interface{}, error) {

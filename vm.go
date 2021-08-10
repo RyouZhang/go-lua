@@ -89,24 +89,21 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 	switch ret {
 	case C.LUA_OK:
 		{
-			var (
-				res interface{}
-				err interface{}
-			)
 			luaCtx.status = 3
-			num := C.lua_gettop(L)
-			if num > 1 {
-				err = pullFromLua(L, -1)
-				C.lua_remove(L, -1)
-				res = pullFromLua(L, -1)
-			} else {
-				res = pullFromLua(L, -1)
+			count := int(C.lua_gettop(L))
+			res := make([]interface{}, count)
+			for {
+				count = int(C.lua_gettop(L))
+				if count == 0 {
+					break
+				}
+				res[count-1] = pullFromLua(L, -1)
+				C.glua_pop(L, 1)
 			}
-			C.glua_pop(L, -1)
-			if err != nil {
-				luaCtx.callback <- errors.New(err.(string))
-			} else {
+			if len(res) > 1 {
 				luaCtx.callback <- res
+			} else {
+				luaCtx.callback <- res[0]
 			}
 			close(luaCtx.callback)
 			v.destoryThread(threadId, L)
@@ -183,14 +180,20 @@ func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 	case C.LUA_OK:
 		{
 			luaCtx.status = 3
-			err := pullFromLua(L, -1)
-			C.lua_remove(L, -1)
-			res := pullFromLua(L, -1)
-			C.glua_pop(L, -1)
-			if err != nil {
-				luaCtx.callback <- errors.New(err.(string))
-			} else {
+			count := int(C.lua_gettop(L))
+			res := make([]interface{}, count)
+			for {
+				count = int(C.lua_gettop(L))
+				if count == 0 {
+					break
+				}
+				res[count-1] = pullFromLua(L, -1)
+				C.glua_pop(L, 1)
+			}
+			if len(res) > 1 {
 				luaCtx.callback <- res
+			} else {
+				luaCtx.callback <- res[0]
 			}
 			close(luaCtx.callback)
 			v.destoryThread(luaCtx.luaThreadId, L)

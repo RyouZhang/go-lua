@@ -24,9 +24,9 @@ end
 function test_args(n)
     res, err = coroutine.yield('test_sum', 1,2,3,4,5,6,n)
     if err == nil then
-        return res, nil
+        return res
     else
-        return n, err
+        error(err)
     end
 end
 
