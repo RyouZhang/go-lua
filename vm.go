@@ -283,4 +283,6 @@ func (v *luaVm) destoryThread(threadId int64, L *C.struct_lua_State) {
 }
 
 func (v *luaVm) destory() {
+	C.lua_close(v.state)
+	v.state = nil
 }
