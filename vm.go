@@ -111,6 +111,7 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 	case C.LUA_YIELD:
 		{
 			luaCtx.status = 2
+			v.resumeCount++
 
 			count := int(C.lua_gettop(L))
 			args := make([]interface{}, count)
@@ -172,6 +173,7 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 }
 
 func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
+	v.resumeCount--
 	L := v.threadDic[luaCtx.luaThreadId]
 	pushToLua(L, luaCtx.act.params...)
 	num := C.lua_gettop(L)
@@ -200,6 +202,7 @@ func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 		}
 	case C.LUA_YIELD:
 		{
+			v.resumeCount++
 			luaCtx.status = 2
 
 			count := int(C.lua_gettop(L))
