@@ -2,8 +2,6 @@ package glua
 
 import (
 	"errors"
-	"fmt"
-	"strconv"
 	"sync"
 	"unsafe"
 )
@@ -14,28 +12,27 @@ import (
 import "C"
 
 var (
-	dummyCache map[int64]map[int64]interface{}
+	dummyCache map[uintptr]map[uintptr]interface{}
 	dummyRW    sync.RWMutex
 )
 
 func init() {
-	dummyCache = make(map[int64]map[int64]interface{})
+	dummyCache = make(map[uintptr]map[uintptr]interface{})
 }
 
 //lua dummy method
 func pushDummy(vm *C.struct_lua_State, obj interface{}) unsafe.Pointer {
 	vmKey := generateLuaStateId(vm)
 
-	// addr, _ := strconv.ParseInt(fmt.Sprintf("%d", &obj), 10, 64)
 	ptr := unsafe.Pointer(&obj)
-	dummyId, _ := strconv.ParseInt(fmt.Sprintf("%d", ptr), 10, 64)
+	dummyId := uintptr(ptr)
 
 	dummyRW.Lock()
 	defer dummyRW.Unlock()
 
 	target, ok := dummyCache[vmKey]
 	if false == ok {
-		target = make(map[int64]interface{})
+		target = make(map[uintptr]interface{})
 		target[dummyId] = obj
 		dummyCache[vmKey] = target
 	} else {
@@ -47,7 +44,7 @@ func pushDummy(vm *C.struct_lua_State, obj interface{}) unsafe.Pointer {
 
 func findDummy(vm *C.struct_lua_State, ptr unsafe.Pointer) (interface{}, error) {
 	vmKey := generateLuaStateId(vm)
-	dummyId, _ := strconv.ParseInt(fmt.Sprintf("%d", ptr), 10, 64)
+	dummyId := uintptr(ptr)
 
 	dummyRW.RLock()
 	defer dummyRW.RUnlock()

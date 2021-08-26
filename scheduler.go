@@ -2,6 +2,8 @@ package glua
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"sync"
 )
 
@@ -13,8 +15,8 @@ var (
 type luaContext struct {
 	ctx         context.Context
 	act         *Action
-	luaStateId  int64
-	luaThreadId int64
+	luaStateId  uintptr
+	luaThreadId uintptr
 	callback    chan interface{}
 	status      int //0 wating, 1 running, 2 yield, 3 finish
 }
@@ -90,6 +92,13 @@ func (s *vmScheduler) loop() {
 
 func (s *vmScheduler) run(vm *luaVm, luaCtx *luaContext) {
 	defer func() {
+		if e := recover(); e != nil {
+			err, ok := e.(error)
+			if !ok {
+				err = errors.New(fmt.Sprintf("%v", e))
+			}
+			luaCtx.callback <- err
+		}
 		s.vmQueue <- vm
 	}()
 	switch luaCtx.status {
@@ -100,7 +109,7 @@ func (s *vmScheduler) run(vm *luaVm, luaCtx *luaContext) {
 	}
 }
 
-func (s *vmScheduler) pick(stateId int64) *luaContext {
+func (s *vmScheduler) pick(stateId uintptr) *luaContext {
 	var (
 		index  int
 		luaCtx *luaContext
@@ -117,7 +126,7 @@ func (s *vmScheduler) pick(stateId int64) *luaContext {
 		case len(s.resumes) == 1:
 			s.resumes = []*luaContext{}
 		case index == len(s.resumes)-1:
-			s.resumes = s.resumes[:index-1]
+			s.resumes = s.resumes[:index]
 		case index == 0:
 			s.resumes = s.resumes[1:]
 		default:

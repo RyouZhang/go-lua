@@ -2,8 +2,8 @@ package glua
 
 type vmPool struct {
 	maxVmCount int
-	idleVmDic  map[int64]*luaVm
-	validVmDic map[int64]*luaVm
+	idleVmDic  map[uintptr]*luaVm
+	validVmDic map[uintptr]*luaVm
 }
 
 func newVMPool(maxVmCount int) *vmPool {
@@ -15,8 +15,8 @@ func newVMPool(maxVmCount int) *vmPool {
 	}
 	return &vmPool{
 		maxVmCount: maxVmCount,
-		validVmDic: make(map[int64]*luaVm),
-		idleVmDic:  make(map[int64]*luaVm),
+		validVmDic: make(map[uintptr]*luaVm),
+		idleVmDic:  make(map[uintptr]*luaVm),
 	}
 }
 
@@ -45,7 +45,7 @@ func (vp *vmPool) release(vm *luaVm) {
 	}
 }
 
-func (vp *vmPool) find(stateId int64) *luaVm {
+func (vp *vmPool) find(stateId uintptr) *luaVm {
 	vm, ok := vp.idleVmDic[stateId]
 	if ok {
 		vp.validVmDic[vm.stateId] = vm
