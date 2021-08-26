@@ -114,7 +114,7 @@ func pushToLua(L *C.struct_lua_State, args ...interface{}) {
 		case error:
 			{
 				str := arg.(error).Error()
-				C.lua_pushlstring(L, C.CString(str), C.size_t(len([]byte(str))))			
+				C.lua_pushlstring(L, C.CString(str), C.size_t(len([]byte(str))))
 			}
 		case []byte:
 			C.lua_pushlstring(L, C.CString(string(arg.([]byte))), C.size_t(len(arg.([]byte))))

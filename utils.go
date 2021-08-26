@@ -32,7 +32,5 @@ func createLuaState() (uintptr, *C.struct_lua_State) {
 
 func createLuaThread(vm *C.struct_lua_State) (uintptr, *C.struct_lua_State) {
 	L := C.lua_newthread(vm)
-	key := generateLuaStateId(L)
-
-	return key, L
+	return generateLuaStateId(L), L
 }
