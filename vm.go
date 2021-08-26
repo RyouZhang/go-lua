@@ -35,6 +35,10 @@ func newLuaVm() *luaVm {
 }
 
 func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
+	defer func() {
+		C.lua_gc(v.state,C.LUA_GCCOLLECT, 0)
+	}()
+
 	threadId, L := createLuaThread(v.state)
 
 	v.threadDic[threadId] = L
@@ -173,6 +177,10 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 }
 
 func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
+	defer func() {
+		C.lua_gc(v.state,C.LUA_GCCOLLECT, 0)
+	}()
+
 	v.resumeCount--
 	L := v.threadDic[luaCtx.luaThreadId]
 	pushToLua(L, luaCtx.act.params...)
