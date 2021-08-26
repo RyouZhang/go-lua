@@ -116,8 +116,8 @@ func (s *vmScheduler) pick(stateId uintptr) *luaContext {
 	)
 	// check resume list
 	for index, _ = range s.resumes {
-		luaCtx = s.resumes[index]
-		if luaCtx.luaStateId == stateId {
+		if s.resumes[index].luaStateId == stateId {
+			luaCtx = s.resumes[index]
 			break
 		}
 	}
