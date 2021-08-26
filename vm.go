@@ -267,22 +267,22 @@ func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 func (v *luaVm) destoryThread(threadId uintptr, L *C.struct_lua_State) {
 	cleanDummy(L)
 	delete(v.threadDic, threadId)
-	// var (
-	// 	index C.int
-	// 	count C.int
-	// )
-	// count = C.lua_gettop(v.state)
-	// for index = 1; index <= count; index++ {
-	// 	vType := C.lua_type(v.state, index)
-	// 	if vType == C.LUA_TTHREAD {
-	// 		ptr := C.lua_tothread(v.state, index)
-	// 		if ptr == L {
-	// 			C.lua_remove(v.state, index)
-	// 			L = nil
-	// 			return
-	// 		}
-	// 	}
-	// }
+	var (
+		index C.int
+		count C.int
+	)
+	count = C.lua_gettop(v.state)
+	for index = 1; index <= count; index++ {
+		vType := C.lua_type(v.state, index)
+		if vType == C.LUA_TTHREAD {
+			ptr := C.lua_tothread(v.state, index)
+			if ptr == L {
+				C.lua_remove(v.state, index)
+				L = nil
+				return
+			}
+		}
+	}
 }
 
 func (v *luaVm) destory() {
