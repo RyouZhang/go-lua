@@ -16,10 +16,10 @@ func generateLuaStateId(vm *C.struct_lua_State) uintptr {
 }
 
 func createLuaState() (uintptr, *C.struct_lua_State) {
-	vm := C.luaL_newstate()
-	C.lua_gc(vm, C.LUA_GCSTOP, 0)
-	C.luaL_openlibs(vm)
-	C.lua_gc(vm, C.LUA_GCRESTART, 0)
+	vm := C.gluaL_newstate()
+	C.glua_gc(vm, C.LUA_GCSTOP, 0)
+	C.gluaL_openlibs(vm)
+	C.glua_gc(vm, C.LUA_GCRESTART, 0)
 	C.register_go_method(vm)
 
 	if globalOpts.preloadScriptMethod != nil {
@@ -31,6 +31,6 @@ func createLuaState() (uintptr, *C.struct_lua_State) {
 }
 
 func createLuaThread(vm *C.struct_lua_State) (uintptr, *C.struct_lua_State) {
-	L := C.lua_newthread(vm)
+	L := C.glua_newthread(vm)
 	return generateLuaStateId(L), L
 }

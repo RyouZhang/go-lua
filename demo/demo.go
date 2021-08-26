@@ -59,7 +59,7 @@ func main() {
 	fmt.Println(res, err)
 
 	s = time.Now()
-	res, err = glua.NewAction().WithScriptPath("script.lua").WithEntrypoint("test_args").AddParam(69).Execute(context.Background())
+	res, err = glua.NewAction().WithScriptPath("script.lua").WithEntrypoint("test_args").AddParam([]interface{}{69,56}).Execute(context.Background())
 	fmt.Println(time.Now().Sub(s))
 	fmt.Println(res, err)
 

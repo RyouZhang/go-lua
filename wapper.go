@@ -80,44 +80,44 @@ func pushToLua(L *C.struct_lua_State, args ...interface{}) {
 	for _, arg := range args {
 		switch arg.(type) {
 		case string:
-			C.lua_pushlstring(L, C.CString(arg.(string)), C.size_t(len([]byte(arg.(string)))))
+			C.glua_pushlstring(L, C.CString(arg.(string)), C.size_t(len([]byte(arg.(string)))))
 		case float64:
-			C.lua_pushnumber(L, C.lua_Number(arg.(float64)))
+			C.glua_pushnumber(L, C.lua_Number(arg.(float64)))
 		case float32:
-			C.lua_pushnumber(L, C.lua_Number(arg.(float32)))
+			C.glua_pushnumber(L, C.lua_Number(arg.(float32)))
 		case uint64:
-			C.lua_pushnumber(L, C.lua_Number(arg.(uint64)))
+			C.glua_pushnumber(L, C.lua_Number(arg.(uint64)))
 		case int64:
-			C.lua_pushnumber(L, C.lua_Number(arg.(int64)))
+			C.glua_pushnumber(L, C.lua_Number(arg.(int64)))
 		case uint32:
-			C.lua_pushnumber(L, C.lua_Number(arg.(uint32)))
+			C.glua_pushnumber(L, C.lua_Number(arg.(uint32)))
 		case int32:
-			C.lua_pushnumber(L, C.lua_Number(arg.(int32)))
+			C.glua_pushnumber(L, C.lua_Number(arg.(int32)))
 		case uint16:
-			C.lua_pushnumber(L, C.lua_Number(arg.(uint16)))
+			C.glua_pushnumber(L, C.lua_Number(arg.(uint16)))
 		case int16:
-			C.lua_pushnumber(L, C.lua_Number(arg.(int16)))
+			C.glua_pushnumber(L, C.lua_Number(arg.(int16)))
 		case uint8:
-			C.lua_pushnumber(L, C.lua_Number(arg.(uint8)))
+			C.glua_pushnumber(L, C.lua_Number(arg.(uint8)))
 		case int8:
-			C.lua_pushnumber(L, C.lua_Number(arg.(int8)))
+			C.glua_pushnumber(L, C.lua_Number(arg.(int8)))
 		case uint:
-			C.lua_pushnumber(L, C.lua_Number(arg.(uint)))
+			C.glua_pushnumber(L, C.lua_Number(arg.(uint)))
 		case int:
-			C.lua_pushnumber(L, C.lua_Number(arg.(int)))
+			C.glua_pushnumber(L, C.lua_Number(arg.(int)))
 		case bool:
 			if arg.(bool) {
-				C.lua_pushboolean(L, C.int(1))
+				C.glua_pushboolean(L, C.int(1))
 			} else {
-				C.lua_pushboolean(L, C.int(0))
+				C.glua_pushboolean(L, C.int(0))
 			}
 		case error:
 			{
 				str := arg.(error).Error()
-				C.lua_pushlstring(L, C.CString(str), C.size_t(len([]byte(str))))
+				C.glua_pushlstring(L, C.CString(str), C.size_t(len([]byte(str))))
 			}
 		case []byte:
-			C.lua_pushlstring(L, C.CString(string(arg.([]byte))), C.size_t(len(arg.([]byte))))
+			C.glua_pushlstring(L, C.CString(string(arg.([]byte))), C.size_t(len(arg.([]byte))))
 		case map[string]interface{}:
 			{
 				pushMapToLua(L, arg.(map[string]interface{}))
@@ -128,7 +128,7 @@ func pushToLua(L *C.struct_lua_State, args ...interface{}) {
 			}
 		case nil:
 			{
-				C.lua_pushnil(L)
+				C.glua_pushnil(L)
 			}
 		default:
 			{
@@ -140,26 +140,26 @@ func pushToLua(L *C.struct_lua_State, args ...interface{}) {
 }
 
 func pushArrayToLua(L *C.struct_lua_State, data []interface{}) {
-	C.lua_createtable(L, 0, 0)
+	C.glua_createtable(L, 0, 0)
 	if len(data) == 0 {
 		return
 	}
 	for index, value := range data {
-		C.lua_pushnumber(L, C.lua_Number(index))
+		C.glua_pushnumber(L, C.lua_Number(index+1))
 		pushToLua(L, value)
-		C.lua_settable(L, -3)
+		C.glua_settable(L, -3)
 	}
 }
 
 func pushMapToLua(L *C.struct_lua_State, data map[string]interface{}) {
-	C.lua_createtable(L, 0, 0)
+	C.glua_createtable(L, 0, 0)
 	if len(data) == 0 {
 		return
 	}
 	for key, value := range data {
-		C.lua_pushstring(L, C.CString(key))
+		C.glua_pushlstring(L, C.CString(key), C.size_t(len([]byte(key))))
 		pushToLua(L, value)
-		C.lua_settable(L, -3)
+		C.glua_settable(L, -3)
 	}
 }
 
@@ -172,16 +172,16 @@ func pullLuaTable(_L *C.struct_lua_State) interface{} {
 		key   interface{}
 		value interface{}
 	)
-	C.lua_pushnil(_L)
-	for C.lua_next(_L, -2) != 0 {
-		kType := C.lua_type(_L, -2)
+	C.glua_pushnil(_L)
+	for C.glua_next(_L, -2) != 0 {
+		kType := C.glua_type(_L, -2)
 		if kType == 4 {
 			key = C.GoString(C.glua_tostring(_L, -2))
 		} else {
-			key = int(C.lua_tointeger(_L, -2))
+			key, _ = LuaNumberToInt(C.glua_tonumber(_L, -2))
 			numKeyCount = numKeyCount + 1
 		}
-		vType := C.lua_type(_L, -1)
+		vType := C.glua_type(_L, -1)
 		switch vType {
 		case 0:
 			{
@@ -190,7 +190,7 @@ func pullLuaTable(_L *C.struct_lua_State) interface{} {
 			}
 		case 1:
 			{
-				temp := C.lua_toboolean(_L, -1)
+				temp := C.glua_toboolean(_L, -1)
 				if temp == 1 {
 					value = true
 				} else {
@@ -248,7 +248,7 @@ func pullLuaTable(_L *C.struct_lua_State) interface{} {
 }
 
 func pullFromLua(L *C.struct_lua_State, index int) interface{} {
-	vType := C.lua_type(L, C.int(index))
+	vType := C.glua_type(L, C.int(index))
 	switch vType {
 	case C.LUA_TBOOLEAN:
 		{

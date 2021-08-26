@@ -46,6 +46,74 @@ void* glua_touserdata(lua_State* _L, int index) {
 	return lua_touserdata(_L, index);
 }
 
+int glua_resume (lua_State *_L, int narg) {
+	return lua_resume(_L, narg);
+}
+
+int glua_gettop(lua_State *_L) {
+	return lua_gettop(_L);
+}
+
+int glua_gc (lua_State *_L, int what, int data) {
+	return lua_gc(_L, what, data);
+}
+
+lua_State *gluaL_newstate (void) {
+	return luaL_newstate();
+}
+
+void gluaL_openlibs (lua_State *_L) {
+	luaL_openlibs(_L);
+}
+
+lua_State *glua_newthread (lua_State *_L) {
+	return lua_newthread(_L);
+}
+
+void glua_close (lua_State *_L) {
+	lua_close(_L);
+}
+
+void glua_remove (lua_State *_L, int index) {
+	lua_remove(_L, index);
+}
+
+int glua_type (lua_State *_L, int index) {
+	return lua_type(_L, index);
+}
+
+void glua_pushlstring (lua_State *_L, const char *s, size_t len) {
+	lua_pushlstring (_L, s, len);
+}
+
+void glua_pushnumber (lua_State *_L, lua_Number n) {
+	lua_pushnumber(_L, n);
+}
+
+void glua_pushboolean (lua_State *_L, int b) {
+	lua_pushboolean(_L, b);
+}
+
+void glua_pushnil (lua_State *_L) {
+	lua_pushnil(_L);
+}
+
+void glua_createtable (lua_State *_L, int narr, int nrec) {
+	lua_createtable(_L, narr, nrec);
+}
+
+void glua_settable (lua_State *_L, int index) {
+	lua_settable (_L, index);
+}
+
+int glua_next (lua_State *_L, int index) {
+	return lua_next(_L, index);
+}
+
+int glua_toboolean (lua_State *_L, int index) {
+	return lua_toboolean(_L, index);
+}
+
 void register_go_method(lua_State* _L) {
 	// lua_pushcfunction(_L, &sync_go_method);
 	// lua_setglobal(_L, "sync_go_method");

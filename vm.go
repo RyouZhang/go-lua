@@ -36,7 +36,7 @@ func newLuaVm() *luaVm {
 
 func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 	defer func() {
-		C.lua_gc(v.state, C.LUA_GCCOLLECT, 0)
+		C.glua_gc(v.state, C.LUA_GCCOLLECT, 0)
 	}()
 
 	threadId, L := createLuaThread(v.state)
@@ -87,7 +87,7 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 	if ret == C.LUA_OK && len(luaCtx.act.entrypoint) > 0 {
 		C.glua_getglobal(L, C.CString(luaCtx.act.entrypoint))
 		pushToLua(L, luaCtx.act.params...)
-		ret = C.lua_resume(L, C.int(len(luaCtx.act.params)))
+		ret = C.glua_resume(L, C.int(len(luaCtx.act.params)))
 	}
 
 	switch ret {
@@ -95,10 +95,10 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 		{
 			metricCounter("glua_action_result_total", 1, map[string]string{"type": "success"})
 			luaCtx.status = 3
-			count := int(C.lua_gettop(L))
+			count := int(C.glua_gettop(L))
 			res := make([]interface{}, count)
 			for {
-				count = int(C.lua_gettop(L))
+				count = int(C.glua_gettop(L))
 				if count == 0 {
 					break
 				}
@@ -119,10 +119,10 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 			luaCtx.status = 2
 			v.resumeCount++
 
-			count := int(C.lua_gettop(L))
+			count := int(C.glua_gettop(L))
 			args := make([]interface{}, count)
 			for {
-				count = int(C.lua_gettop(L))
+				count = int(C.glua_gettop(L))
 				if count == 0 {
 					break
 				}
@@ -181,23 +181,23 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 
 func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 	defer func() {
-		C.lua_gc(v.state, C.LUA_GCCOLLECT, 0)
+		C.glua_gc(v.state, C.LUA_GCCOLLECT, 0)
 	}()
 
 	v.resumeCount--
 	L := v.threadDic[luaCtx.luaThreadId]
 	pushToLua(L, luaCtx.act.params...)
-	num := C.lua_gettop(L)
-	ret := C.lua_resume(L, num)
+	num := C.glua_gettop(L)
+	ret := C.glua_resume(L, num)
 	switch ret {
 	case C.LUA_OK:
 		{
 			metricCounter("glua_action_result_total", 1, map[string]string{"type": "success"})
 			luaCtx.status = 3
-			count := int(C.lua_gettop(L))
+			count := int(C.glua_gettop(L))
 			res := make([]interface{}, count)
 			for {
-				count = int(C.lua_gettop(L))
+				count = int(C.glua_gettop(L))
 				if count == 0 {
 					break
 				}
@@ -218,10 +218,10 @@ func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 			v.resumeCount++
 			luaCtx.status = 2
 
-			count := int(C.lua_gettop(L))
+			count := int(C.glua_gettop(L))
 			args := make([]interface{}, count)
 			for {
-				count = int(C.lua_gettop(L))
+				count = int(C.glua_gettop(L))
 				if count == 0 {
 					break
 				}
@@ -285,13 +285,13 @@ func (v *luaVm) destoryThread(threadId uintptr, L *C.struct_lua_State) {
 		index C.int
 		count C.int
 	)
-	count = C.lua_gettop(v.state)
+	count = C.glua_gettop(v.state)
 	for index = 1; index <= count; index++ {
-		vType := C.lua_type(v.state, index)
+		vType := C.glua_type(v.state, index)
 		if vType == C.LUA_TTHREAD {
-			ptr := C.lua_tothread(v.state, index)
+			ptr := C.glua_tothread(v.state, index)
 			if ptr == L {
-				C.lua_remove(v.state, index)
+				C.glua_remove(v.state, index)
 				L = nil
 				return
 			}
@@ -300,6 +300,6 @@ func (v *luaVm) destoryThread(threadId uintptr, L *C.struct_lua_State) {
 }
 
 func (v *luaVm) destory() {
-	C.lua_close(v.state)
+	C.glua_close(v.state)
 	v.state = nil
 }
