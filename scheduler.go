@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 )
 
 var (
@@ -149,6 +150,12 @@ func (s *vmScheduler) pick(stateId uintptr) *luaContext {
 }
 
 func (s *vmScheduler) do(ctx context.Context, act *Action) (interface{}, error) {
+	ts := time.Now()
+	defer func() {
+		metricCounter("glua_action_scheduler_total", 1, nil)
+		metricCounter("glua_action_scheduler_second_total", int64(time.Now().Sub(ts).Milliseconds()), nil)
+	}()
+
 	luaCtx := &luaContext{
 		ctx:         ctx,
 		act:         act,

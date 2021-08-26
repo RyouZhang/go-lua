@@ -3,7 +3,7 @@ package glua
 type vmPool struct {
 	maxVmCount int
 	idleVmDic  map[uintptr]*luaVm
-	validVmDic map[uintptr]*luaVm
+	inUseVmDic map[uintptr]*luaVm
 }
 
 func newVMPool(maxVmCount int) *vmPool {
@@ -15,29 +15,37 @@ func newVMPool(maxVmCount int) *vmPool {
 	}
 	return &vmPool{
 		maxVmCount: maxVmCount,
-		validVmDic: make(map[uintptr]*luaVm),
+		inUseVmDic: make(map[uintptr]*luaVm),
 		idleVmDic:  make(map[uintptr]*luaVm),
 	}
 }
 
 func (vp *vmPool) accquire() *luaVm {
+	defer func() {
+		metricGauge("glua_vm_idle_count", int64(len(vp.idleVmDic)), nil)
+		metricGauge("glua_vm_inuse_count", int64(len(vp.inUseVmDic)), nil)
+	}()
 	// check idle vm
 	for _, vm := range vp.idleVmDic {
 		delete(vp.idleVmDic, vm.stateId)
-		vp.validVmDic[vm.stateId] = vm
+		vp.inUseVmDic[vm.stateId] = vm
 		return vm
 	}
 	// create new vm
-	if len(vp.validVmDic) == vp.maxVmCount {
+	if len(vp.inUseVmDic) == vp.maxVmCount {
 		return nil
 	}
 	vm := newLuaVm()
-	vp.validVmDic[vm.stateId] = vm
+	vp.inUseVmDic[vm.stateId] = vm
 	return vm
 }
 
 func (vp *vmPool) release(vm *luaVm) {
-	delete(vp.validVmDic, vm.stateId)
+	defer func() {
+		metricGauge("glua_vm_idle_count", int64(len(vp.idleVmDic)), nil)
+		metricGauge("glua_vm_inuse_count", int64(len(vp.inUseVmDic)), nil)
+	}()
+	delete(vp.inUseVmDic, vm.stateId)
 	if vm.needDestory && vm.resumeCount == 0 {
 		vm.destory()
 	} else {
@@ -46,9 +54,13 @@ func (vp *vmPool) release(vm *luaVm) {
 }
 
 func (vp *vmPool) find(stateId uintptr) *luaVm {
+	defer func() {
+		metricGauge("glua_vm_idle_count", int64(len(vp.idleVmDic)), nil)
+		metricGauge("glua_vm_inuse_count", int64(len(vp.inUseVmDic)), nil)
+	}()
 	vm, ok := vp.idleVmDic[stateId]
 	if ok {
-		vp.validVmDic[vm.stateId] = vm
+		vp.inUseVmDic[vm.stateId] = vm
 		delete(vp.idleVmDic, stateId)
 		return vm
 	}

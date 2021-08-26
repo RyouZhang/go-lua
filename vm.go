@@ -36,7 +36,7 @@ func newLuaVm() *luaVm {
 
 func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 	defer func() {
-		C.lua_gc(v.state,C.LUA_GCCOLLECT, 0)
+		C.lua_gc(v.state, C.LUA_GCCOLLECT, 0)
 	}()
 
 	threadId, L := createLuaThread(v.state)
@@ -93,6 +93,7 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 	switch ret {
 	case C.LUA_OK:
 		{
+			metricCounter("glua_action_result_total", 1, map[string]string{"type": "success"})
 			luaCtx.status = 3
 			count := int(C.lua_gettop(L))
 			res := make([]interface{}, count)
@@ -114,6 +115,7 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 		}
 	case C.LUA_YIELD:
 		{
+			metricCounter("glua_action_result_total", 1, map[string]string{"type": "yield"})
 			luaCtx.status = 2
 			v.resumeCount++
 
@@ -168,6 +170,7 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 		}
 	default:
 		{
+			metricCounter("glua_action_result_total", 1, map[string]string{"type": "error"})
 			luaCtx.status = 3
 			luaCtx.callback <- errors.New(C.GoString(C.glua_tostring(L, -1)))
 			close(luaCtx.callback)
@@ -178,7 +181,7 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 
 func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 	defer func() {
-		C.lua_gc(v.state,C.LUA_GCCOLLECT, 0)
+		C.lua_gc(v.state, C.LUA_GCCOLLECT, 0)
 	}()
 
 	v.resumeCount--
@@ -189,6 +192,7 @@ func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 	switch ret {
 	case C.LUA_OK:
 		{
+			metricCounter("glua_action_result_total", 1, map[string]string{"type": "success"})
 			luaCtx.status = 3
 			count := int(C.lua_gettop(L))
 			res := make([]interface{}, count)
@@ -210,6 +214,7 @@ func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 		}
 	case C.LUA_YIELD:
 		{
+			metricCounter("glua_action_result_total", 1, map[string]string{"type": "yield"})
 			v.resumeCount++
 			luaCtx.status = 2
 
@@ -264,6 +269,7 @@ func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 		}
 	default:
 		{
+			metricCounter("glua_action_result_total", 1, map[string]string{"type": "error"})
 			luaCtx.status = 3
 			luaCtx.callback <- errors.New(C.GoString(C.glua_tostring(L, -1)))
 			close(luaCtx.callback)
