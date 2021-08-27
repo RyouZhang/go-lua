@@ -48,6 +48,8 @@ func getScheduler() *vmScheduler {
 
 func (s *vmScheduler) loop() {
 	for {
+		metricGauge("glua_sheduler_resume_queue_size", int64(len(s.resumes)), nil)
+		metricGauge("glua_sheduler_waiting_queue_size", int64(len(s.waitings)), nil)
 		select {
 		case <-s.shutdown:
 			{
@@ -55,9 +57,6 @@ func (s *vmScheduler) loop() {
 			}
 		case vm := <-s.vmQueue:
 			{
-				metricGauge("glua_sheduler_resume_queue_size", int64(len(s.resumes)), nil)
-				metricGauge("glua_sheduler_waiting_queue_size", int64(len(s.waitings)), nil)
-
 				luaCtx := s.pick(vm.stateId)
 				if luaCtx == nil {
 					s.vp.release(vm)
@@ -67,9 +66,6 @@ func (s *vmScheduler) loop() {
 			}
 		case luaCtx := <-s.luaCtxQueue:
 			{
-				metricGauge("glua_sheduler_resume_queue_size", int64(len(s.resumes)), nil)
-				metricGauge("glua_sheduler_waiting_queue_size", int64(len(s.waitings)), nil)
-
 				switch luaCtx.status {
 				case 0:
 					{
@@ -108,6 +104,7 @@ func (s *vmScheduler) run(vm *luaVm, luaCtx *luaContext) {
 		}
 		s.vmQueue <- vm
 	}()
+
 	switch luaCtx.status {
 	case 2:
 		vm.resume(luaCtx.ctx, luaCtx)

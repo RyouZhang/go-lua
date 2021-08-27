@@ -35,6 +35,13 @@ func newLuaVm() *luaVm {
 }
 
 func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
+	metricCounter("glua_vm_run_total", 1, map[string]string{
+		"vm_id": fmt.Sprintf("%d", v.stateId),
+	})
+	metricGauge("glua_vm_memory_size", int64(C.glua_gc(v.state, C.LUA_GCCOUNT, 0)<<10+C.glua_gc(v.state, C.LUA_GCCOUNTB, 0)), map[string]string{
+		"vm_id": fmt.Sprintf("%d", v.stateId),
+	})
+
 	defer func() {
 		C.glua_gc(v.state, C.LUA_GCCOLLECT, 0)
 	}()
@@ -180,6 +187,13 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 }
 
 func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
+	metricCounter("glua_vm_run_total", 1, map[string]string{
+		"vm_id": fmt.Sprintf("%d", v.stateId),
+	})
+	metricGauge("glua_vm_memory_size", int64(C.glua_gc(v.state, C.LUA_GCCOUNT, 0)<<10+C.glua_gc(v.state, C.LUA_GCCOUNTB, 0)), map[string]string{
+		"vm_id": fmt.Sprintf("%d", v.stateId),
+	})
+
 	defer func() {
 		C.glua_gc(v.state, C.LUA_GCCOLLECT, 0)
 	}()
@@ -279,6 +293,10 @@ func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 }
 
 func (v *luaVm) destoryThread(threadId uintptr, L *C.struct_lua_State) {
+	defer func() {
+		C.glua_gc(v.state, C.LUA_GCCOLLECT, 0)
+	}()
+
 	cleanDummy(L)
 	delete(v.threadDic, threadId)
 	var (
