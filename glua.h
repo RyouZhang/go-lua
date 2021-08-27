@@ -26,7 +26,7 @@ void glua_close (lua_State *_L);
 void glua_remove (lua_State *_L, int index);
 int glua_type (lua_State *_L, int index);
 
-void glua_pushlstring (lua_State *_L, const char *s, size_t len);
+void glua_pushlstring (lua_State *_L, char *s, size_t len);
 void glua_pushnumber (lua_State *_L, lua_Number n);
 void glua_pushboolean (lua_State *_L, int b);
 void glua_pushnil (lua_State *_L);

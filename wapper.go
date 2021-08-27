@@ -80,7 +80,9 @@ func pushToLua(L *C.struct_lua_State, args ...interface{}) {
 	for _, arg := range args {
 		switch arg.(type) {
 		case string:
-			C.glua_pushlstring(L, C.CString(arg.(string)), C.size_t(len([]byte(arg.(string)))))
+			{
+				C.glua_pushlstring(L, C.CString(arg.(string)), C.size_t(len([]byte(arg.(string)))))
+			}
 		case float64:
 			C.glua_pushnumber(L, C.lua_Number(arg.(float64)))
 		case float32:
@@ -117,7 +119,9 @@ func pushToLua(L *C.struct_lua_State, args ...interface{}) {
 				C.glua_pushlstring(L, C.CString(str), C.size_t(len([]byte(str))))
 			}
 		case []byte:
-			C.glua_pushlstring(L, C.CString(string(arg.([]byte))), C.size_t(len(arg.([]byte))))
+			{
+				C.glua_pushlstring(L, C.CString(string(arg.([]byte))), C.size_t(len(arg.([]byte))))
+			}
 		case map[string]interface{}:
 			{
 				pushMapToLua(L, arg.(map[string]interface{}))

@@ -3,19 +3,25 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "_cgo_export.h"
 
 extern int sync_go_method(lua_State* _L);
 extern int async_go_method(lua_State* _L);
 
 int gluaL_dostring(lua_State* _L, char* script) {
-	return luaL_dostring(_L, script);
+	int res = luaL_dostring(_L, script);
+	free(script);
+	return res;
 }
 void glua_getglobal(lua_State* _L, char* name) {
 	lua_getglobal(_L, name);
+	free(name);
 }
 void glua_setglobal(lua_State* _L, char* name) {
 	lua_setglobal(_L, name);
+	free(name);
 }
 void glua_pushlightuserdata(lua_State* _L, void* obj) {
 	lua_pushlightuserdata(_L, obj);
@@ -82,8 +88,9 @@ int glua_type (lua_State *_L, int index) {
 	return lua_type(_L, index);
 }
 
-void glua_pushlstring (lua_State *_L, const char *s, size_t len) {
+void glua_pushlstring (lua_State *_L, char *s, size_t len) {
 	lua_pushlstring (_L, s, len);
+	free(s);
 }
 
 void glua_pushnumber (lua_State *_L, lua_Number n) {
