@@ -2,7 +2,7 @@
 
 embed lua script language for Go
 
-go luajit glue,very  fast, support lua coroutine
+go luajit glue,very very fast, support lua coroutine
 
 ## Demo
 easy use, like:
