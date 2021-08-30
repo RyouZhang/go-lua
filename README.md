@@ -2,7 +2,7 @@
 
 embed lua script language for Go
 
-go luajit glue,very  fast, support lua coroutine
+go luajit glue,very very fast, support lua coroutine
 
 ## Demo
 easy use, like:
@@ -22,7 +22,7 @@ end
 
 | | fib(35) | fibt(35) |  Language (Type)  |
 | :--- |    ---: |     ---: |  :---: |
-| [**go-lua**](https://github.com/RyouZhang/go-lua) | `110ms` | `1.5ms` | Luajit(VM) |
+| [**glua**](https://github.com/RyouZhang/go-lua) | `110ms` | `1.5ms` | Luajit(VM) |
 | [Tengo](https://github.com/d5/tengo) | `2,315ms` | `3ms` | Tengo (VM) |
 | [go-lua](https://github.com/Shopify/go-lua) | `4,028ms` | `3ms` | Lua (VM) |
 | [GopherLua](https://github.com/yuin/gopher-lua) | `4,409ms` | `3ms` | Lua (VM) |
