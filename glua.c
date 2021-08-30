@@ -7,8 +7,7 @@
 #include <stdlib.h>
 #include "_cgo_export.h"
 
-extern int sync_go_method(lua_State* _L);
-extern int async_go_method(lua_State* _L);
+extern int sync_extern_method(lua_State* _L);
 
 int gluaL_dostring(lua_State* _L, char* script) {
 	int res = luaL_dostring(_L, script);
@@ -122,8 +121,6 @@ int glua_toboolean (lua_State *_L, int index) {
 }
 
 void register_go_method(lua_State* _L) {
-	// lua_pushcfunction(_L, &sync_go_method);
-	// lua_setglobal(_L, "sync_go_method");
-	// lua_pushcfunction(_L, &async_go_method);
-	// lua_setglobal(_L, "async_go_method");
+	lua_pushcfunction(_L, &sync_extern_method);
+	lua_setglobal(_L, "sync_extern_method");
 }

@@ -42,3 +42,45 @@ func callExternMethod(ctx context.Context, methodName string, args ...interface{
 	}
 	return tagetMethod(ctx, args...)
 }
+
+//export sync_extern_method
+func sync_extern_method(vm *C.struct_lua_State) C.int {
+	count := int(C.glua_gettop(vm))
+	args := make([]interface{}, count)
+	for {
+		count = int(C.glua_gettop(vm))
+		if count == 0 {
+			break
+		}
+		args[count-1] = pullFromLua(vm, -1)
+		C.glua_pop(vm, 1)
+	}
+	methodName := args[0].(string)
+	if len(args) > 1 {
+		args = args[1:]
+	} else {
+		args = make([]interface{}, 0)
+	}
+
+	tagetMethod, ok := methodDic[methodName]
+	if false == ok {
+		C.glua_pushnil(vm)
+		str := "Invalid Method Name"
+		C.glua_pushlstring(vm, C.CString(str), C.size_t(len([]byte(str))))
+		return 2
+	}
+	threadId := generateLuaStateId(vm)
+	ctx := findThreadContext(threadId)
+
+	res, err := tagetMethod(ctx, args...)
+	if err != nil {
+		pushToLua(vm, 0)
+		str := err.Error()
+		C.glua_pushlstring(vm, C.CString(str), C.size_t(len([]byte(str))))
+		return 2
+	} else {
+		pushToLua(vm, res)
+		C.glua_pushnil(vm)
+		return 2
+	}
+}

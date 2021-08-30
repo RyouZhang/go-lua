@@ -22,7 +22,7 @@ function fibc(n, a, b)
 end
 
 function test_args(n)
-    res, err = coroutine.yield('test_sum', 1,2,3,4,5,6,n[1],n[2])
+    res, err = sync_extern_method('test_sum', 1,2,3,4,5,6,n[1],n[2])
     if err == nil then
         return res
     else

@@ -52,6 +52,7 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 
 	luaCtx.luaStateId = v.stateId
 	luaCtx.luaThreadId = threadId
+	pushThreadContext(threadId, luaCtx.ctx)
 
 	ret := C.int(C.LUA_OK)
 
@@ -299,6 +300,7 @@ func (v *luaVm) destoryThread(threadId uintptr, L *C.struct_lua_State) {
 
 	cleanDummy(L)
 	delete(v.threadDic, threadId)
+	popThreadContext(threadId)
 	var (
 		index C.int
 		count C.int
