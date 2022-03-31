@@ -40,6 +40,7 @@ func main() {
 
 | | fib(35) | fibt(35) |  Language (Type)  |
 | :--- |    ---: |     ---: |  :---: |
+| [wassmer-go](https://github.com/wasmerio/wasmer-go) | `57ms` | `` | Wasm |
 | [**glua**](https://github.com/RyouZhang/go-lua) | `110ms` | `1.5ms` | Luajit(VM) |
 | [Tengo](https://github.com/d5/tengo) | `2,315ms` | `3ms` | Tengo (VM) |
 | [go-lua](https://github.com/Shopify/go-lua) | `4,028ms` | `3ms` | Lua (VM) |
