@@ -48,7 +48,7 @@ func main() {
 | [goja](https://github.com/dop251/goja) | `5,194ms` | `4ms` | JavaScript (VM) |
 | [starlark-go](https://github.com/google/starlark-go) | `6,954ms` | `3ms` | Starlark (Interpreter) |
 | [gpython](https://github.com/go-python/gpython) | `11,324ms` | `4ms` | Python (Interpreter) |
-| [Yaegi](https://github.com/containous/yaegi) | `11,715ms` | `10ms` | Yaegi (Interpreter) |
+| [Yaegi](https://github.com/containous/yaegi) | `4,715ms` | `10ms` | Yaegi (Interpreter) |
 | [otto](https://github.com/robertkrimen/otto) | `48,539ms` | `6ms` | JavaScript (Interpreter) |
 | [Anko](https://github.com/mattn/anko) | `52,821ms` | `6ms` | Anko (Interpreter) |
 | - | - | - | - |
