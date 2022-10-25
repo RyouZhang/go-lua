@@ -37,3 +37,9 @@ end
 function async_json_encode()
     return coroutine.yield('json_decode', '{"a":"ads","b":12,"c":"sadh"}', 'hello world')
 end
+
+
+function test(req)
+    local name, _ = sync_extern_method('get_header_field', req, 'test')
+    return 'hello world' .. name
+end

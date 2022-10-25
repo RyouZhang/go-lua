@@ -3,6 +3,7 @@ package glua
 import (
 	"errors"
 	"sync"
+	"fmt"
 	"unsafe"
 )
 
@@ -21,7 +22,7 @@ func init() {
 }
 
 //lua dummy method
-func pushDummy(vm *C.struct_lua_State, obj interface{}) unsafe.Pointer {
+func pushDummy(vm *C.struct_lua_State, obj interface{}) unsafe.Pointer {	
 	vmKey := generateLuaStateId(vm)
 
 	ptr := unsafe.Pointer(&obj)
@@ -39,16 +40,18 @@ func pushDummy(vm *C.struct_lua_State, obj interface{}) unsafe.Pointer {
 		target[dummyId] = obj
 	}
 
-	return ptr
+	return unsafe.Pointer(dummyId)
 }
 
 func findDummy(vm *C.struct_lua_State, ptr unsafe.Pointer) (interface{}, error) {
+	fmt.Println("findDummy")
 	vmKey := generateLuaStateId(vm)
 	dummyId := uintptr(ptr)
 
 	dummyRW.RLock()
 	defer dummyRW.RUnlock()
 
+	fmt.Println(dummyId)
 	target, ok := dummyCache[vmKey]
 	if false == ok {
 		return nil, errors.New("Invalid VMKey")
