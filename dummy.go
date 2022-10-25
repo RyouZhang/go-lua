@@ -44,14 +44,12 @@ func pushDummy(vm *C.struct_lua_State, obj interface{}) unsafe.Pointer {
 }
 
 func findDummy(vm *C.struct_lua_State, ptr unsafe.Pointer) (interface{}, error) {
-	fmt.Println("findDummy")
 	vmKey := generateLuaStateId(vm)
 	dummyId := uintptr(ptr)
 
 	dummyRW.RLock()
 	defer dummyRW.RUnlock()
 
-	fmt.Println(dummyId)
 	target, ok := dummyCache[vmKey]
 	if false == ok {
 		return nil, errors.New("Invalid VMKey")
