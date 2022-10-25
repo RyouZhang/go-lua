@@ -2,7 +2,6 @@ package glua
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 	"unsafe"
 )
