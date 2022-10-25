@@ -2,8 +2,8 @@ package glua
 
 import (
 	"errors"
-	"sync"
 	"fmt"
+	"sync"
 	"unsafe"
 )
 
@@ -21,8 +21,8 @@ func init() {
 	dummyCache = make(map[uintptr]map[uintptr]interface{})
 }
 
-//lua dummy method
-func pushDummy(vm *C.struct_lua_State, obj interface{}) unsafe.Pointer {	
+// lua dummy method
+func pushDummy(vm *C.struct_lua_State, obj interface{}) unsafe.Pointer {
 	vmKey := generateLuaStateId(vm)
 
 	ptr := unsafe.Pointer(&obj)
