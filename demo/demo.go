@@ -31,7 +31,7 @@ func json_decode(ctx context.Context, args ...interface{}) (interface{}, error) 
 }
 
 func get_header_field(ctx context.Context, args ...interface{}) (interface{}, error) {
-	req := args[0].(http.Request)
+	req := args[0].(*http.Request)
 	key := args[1].(string)
 	return req.Header.Get(key), nil
 }
@@ -82,8 +82,8 @@ func main() {
 	fmt.Println(res, err)
 
 	req, _ := http.NewRequest("GET", "https://www.bing.com", nil)
-	req.Header.Add("test", "12345")
-	res, err = glua.NewAction().WithScriptPath("script.lua").WithEntrypoint("test").AddParam(*req).Execute(context.Background())
+	req.Header.Add("test", "3121232")
+	res, err = glua.NewAction().WithScriptPath("script.lua").WithEntrypoint("test").AddParam(req).Execute(context.Background())
 	fmt.Println(time.Now().Sub(s))
 	fmt.Println(res, err)
 }
