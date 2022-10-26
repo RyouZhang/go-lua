@@ -39,7 +39,7 @@ function async_json_encode()
 end
 
 
-function test(req)
+function test(req, rw)
     local name, _ = sync_extern_method('get_header_field', req, 'test')
     return 'hello world' .. name
 end

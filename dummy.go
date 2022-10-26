@@ -3,7 +3,9 @@ package glua
 import (
 	"errors"
 	"sync"
+	"fmt"
 	"unsafe"
+	"reflect"
 )
 
 // #cgo CFLAGS: -I/usr/local/include/luajit-2.1
@@ -11,33 +13,58 @@ import (
 //#include "glua.h"
 import "C"
 
+type dummy struct {
+	key []byte
+	val interface{}
+}
+
 var (
-	dummyCache map[uintptr]map[uintptr]interface{}
+	dummyCache map[uintptr]map[uintptr]*dummy
 	dummyRW    sync.RWMutex
 )
 
 func init() {
-	dummyCache = make(map[uintptr]map[uintptr]interface{})
+	dummyCache = make(map[uintptr]map[uintptr]*dummy)
 }
 
 // lua dummy method
 func pushDummy(vm *C.struct_lua_State, obj interface{}) unsafe.Pointer {
 	vmKey := generateLuaStateId(vm)
 
-	ptr := unsafe.Pointer(&obj)
-	dummyId := uintptr(ptr)
+	val := reflect.ValueOf(obj)
+	var (
+		realObj interface{}
+		dummyId uintptr
+	)
+
+	switch val.Kind() {
+	case reflect.Pointer:
+		{							
+			realObj = obj
+		}
+	default:
+		{			
+			realObj = &obj
+		}
+	}
+
+	dObj := &dummy {
+		key: []byte(fmt.Sprintf("%p", realObj)),
+		val: obj,
+	}
+
+	dummyId = uintptr(unsafe.Pointer(&(dObj.key[0])))
 
 	dummyRW.Lock()
-	defer dummyRW.Unlock()
-
 	target, ok := dummyCache[vmKey]
 	if false == ok {
-		target = make(map[uintptr]interface{})
-		target[dummyId] = obj
+		target = make(map[uintptr]*dummy)
+		target[dummyId] = dObj
 		dummyCache[vmKey] = target
 	} else {
-		target[dummyId] = obj
+		target[dummyId] = dObj
 	}
+	dummyRW.Unlock()
 
 	return unsafe.Pointer(dummyId)
 }
@@ -53,11 +80,11 @@ func findDummy(vm *C.struct_lua_State, ptr unsafe.Pointer) (interface{}, error) 
 	if false == ok {
 		return nil, errors.New("Invalid VMKey")
 	}
-	value, ok := target[dummyId]
+	dObj, ok := target[dummyId]
 	if false == ok {
 		return nil, errors.New("Invalid DummyId")
 	}
-	return value, nil
+	return dObj.val, nil
 }
 
 func cleanDummy(vm *C.struct_lua_State) {

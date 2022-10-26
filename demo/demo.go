@@ -36,6 +36,17 @@ func get_header_field(ctx context.Context, args ...interface{}) (interface{}, er
 	return req.Header.Get(key), nil
 }
 
+type A interface {
+	Name() string
+}
+
+type AA struct {
+}
+
+func (a *AA) Name() string {
+	return "hello world"
+}
+
 func main() {
 
 	glua.RegisterExternMethod("json_decode", json_decode)
@@ -83,7 +94,11 @@ func main() {
 
 	req, _ := http.NewRequest("GET", "https://www.bing.com", nil)
 	req.Header.Add("test", "3121232")
-	res, err = glua.NewAction().WithScriptPath("script.lua").WithEntrypoint("test").AddParam(req).Execute(context.Background())
+
+	var a A
+	a = &AA{}
+
+	res, err = glua.NewAction().WithScriptPath("script.lua").WithEntrypoint("test").AddParam(req, a).Execute(context.Background())
 	fmt.Println(time.Now().Sub(s))
 	fmt.Println(res, err)
 }
