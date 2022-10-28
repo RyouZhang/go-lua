@@ -40,16 +40,16 @@ func pushDummy(vm *C.struct_lua_State, obj interface{}) unsafe.Pointer {
 	switch val.Kind() {
 	case reflect.Pointer:
 		{							
-			realObj = obj
+			realObj = val.Elem().Interface()
 		}
 	default:
 		{			
-			realObj = &obj
+			realObj = obj
 		}
 	}
 
 	dObj := &dummy {
-		key: []byte(fmt.Sprintf("%p", realObj)),
+		key: []byte(fmt.Sprintf("%p", &realObj)),
 		val: obj,
 	}
 
