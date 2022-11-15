@@ -27,7 +27,7 @@ func json_decode(ctx context.Context, args ...interface{}) (interface{}, error) 
 
 	var res map[string]interface{}
 	err := json.Unmarshal([]byte(raw), &res)
-	return res, err
+	return []any{res, args[1]}, err
 }
 
 func get_header_field(ctx context.Context, args ...interface{}) (interface{}, error) {
@@ -82,10 +82,12 @@ func main() {
 	fmt.Println(time.Now().Sub(s))
 	fmt.Println(res, err)
 
+	fmt.Println("======")
 	s = time.Now()
 	res, err = glua.NewAction().WithScriptPath("script.lua").WithEntrypoint("async_json_encode").Execute(context.Background())
 	fmt.Println(time.Now().Sub(s))
 	fmt.Println(res, err)
+	fmt.Println("======")
 
 	s = time.Now()
 	res, err = glua.NewAction().WithScriptPath("script.lua").WithEntrypoint("test_pull_table").AddParam(69).Execute(context.Background())

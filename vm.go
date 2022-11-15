@@ -159,20 +159,10 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 				method, ok := luaCtx.act.funcs[methodName]
 				if ok {
 					res, err := method(ctx, args...)
-					switch res.(type) {
-					case []interface{}:
-						luaCtx.act.params = append(res.([]interface{}), err)
-					default:
-						luaCtx.act.params = []interface{}{res, err}
-					}
+					luaCtx.act.params = []interface{}{res, err}
 				} else {
 					res, err := callExternMethod(ctx, methodName, args...)
-					switch res.(type) {
-					case []interface{}:
-						luaCtx.act.params = append(res.([]interface{}), err)
-					default:
-						luaCtx.act.params = []interface{}{res, err}
-					}
+					luaCtx.act.params = []interface{}{res, err}
 				}
 			}()
 		}
@@ -262,23 +252,14 @@ func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 					}
 					getScheduler().luaCtxQueue <- luaCtx
 				}()
+
 				method, ok := luaCtx.act.funcs[methodName]
 				if ok {
 					res, err := method(ctx, args...)
-					switch res.(type) {
-					case []interface{}:
-						luaCtx.act.params = append(res.([]interface{}), err)
-					default:
-						luaCtx.act.params = []interface{}{res, err}
-					}
+					luaCtx.act.params = []interface{}{res, err}
 				} else {
 					res, err := callExternMethod(ctx, methodName, args...)
-					switch res.(type) {
-					case []interface{}:
-						luaCtx.act.params = append(res.([]interface{}), err)
-					default:
-						luaCtx.act.params = []interface{}{res, err}
-					}
+					luaCtx.act.params = []interface{}{res, err}
 				}
 			}()
 		}

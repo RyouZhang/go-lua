@@ -35,11 +35,15 @@ function test_pull_table(obj)
 end
 
 function async_json_encode()
-    return coroutine.yield('json_decode', '{"a":"ads","b":12,"c":"sadh"}', 'hello world')
+    local res, err = coroutine.yield('json_decode', '{"a":"ads","b":12,"c":"sadh"}', 'hello world')
+    if err ~= nil then
+        return nil, nil, err
+    end    
+    return unpack(res)
 end
 
 
 function test(req, rw)
     local name, _ = sync_extern_method('get_header_field', req, 'test')
-    return 'hello world' .. name
+    return 'hello world' .. name, name
 end

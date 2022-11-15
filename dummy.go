@@ -2,10 +2,10 @@ package glua
 
 import (
 	"errors"
-	"sync"
 	"fmt"
-	"unsafe"
 	"reflect"
+	"sync"
+	"unsafe"
 )
 
 // #cgo CFLAGS: -I/usr/local/include/luajit-2.1
@@ -39,16 +39,16 @@ func pushDummy(vm *C.struct_lua_State, obj interface{}) unsafe.Pointer {
 
 	switch val.Kind() {
 	case reflect.Pointer:
-		{							
+		{
 			realObj = val.Elem().Interface()
 		}
 	default:
-		{			
+		{
 			realObj = obj
 		}
 	}
 
-	dObj := &dummy {
+	dObj := &dummy{
 		key: []byte(fmt.Sprintf("%p", &realObj)),
 		val: obj,
 	}
