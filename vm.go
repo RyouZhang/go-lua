@@ -113,10 +113,13 @@ func (v *luaVm) run(ctx context.Context, luaCtx *luaContext) {
 				res[count-1] = pullFromLua(L, -1)
 				C.glua_pop(L, 1)
 			}
-			if len(res) > 1 {
-				luaCtx.callback <- res
-			} else {
+			switch len(res) {
+			case 0:
+				luaCtx.callback <- nil
+			case 1:
 				luaCtx.callback <- res[0]
+			default:
+				luaCtx.callback <- res
 			}
 			close(luaCtx.callback)
 			v.destoryThread(threadId, L)
@@ -209,10 +212,13 @@ func (v *luaVm) resume(ctx context.Context, luaCtx *luaContext) {
 				res[count-1] = pullFromLua(L, -1)
 				C.glua_pop(L, 1)
 			}
-			if len(res) > 1 {
-				luaCtx.callback <- res
-			} else {
+			switch len(res) {
+			case 0:
+				luaCtx.callback <- nil
+			case 1:
 				luaCtx.callback <- res[0]
+			default:
+				luaCtx.callback <- res
 			}
 			close(luaCtx.callback)
 			v.destoryThread(luaCtx.luaThreadId, L)
